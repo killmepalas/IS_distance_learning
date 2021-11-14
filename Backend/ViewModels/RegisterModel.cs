@@ -5,7 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace IS_distance_learning.Models
+namespace IS_distance_learning.ViewModels
 {
     [Keyless]
     public class RegisterModel
