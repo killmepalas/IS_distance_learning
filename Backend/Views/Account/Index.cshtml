@@ -1,0 +1,47 @@
+﻿@model IS_distance_learning.Models.Account
+@{
+    ViewData["Title"] = User.Identity.Name;
+}
+
+<h1>Профиль</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-4">
+        <div>
+            <span>@Model.LastName</span>
+        </div>
+
+        <div>
+            <span>@Model.Name</span>
+        </div>
+
+        <div>
+            <span>@Model.MiddleName</span>
+        </div>
+        @{
+            if (Model.RoleId == 3)
+            {
+                <div>
+                    <span>@Model.GroupName</span>
+                </div>
+            }
+        }
+    </div>
+    @{ 
+        if (Model.RoleId == 1)
+        { 
+        <div class="col-md-4">
+            <a class="btn btn-primary" asp-controller="Account" asp-action="Index">Работа с пользователями</a>
+            <a class="btn btn-primary" asp-controller="Group" asp-action="Index">Работа с учебными группами</a>
+            <a class="btn btn-primary" asp-controller="Account" asp-action="Register">Зарегистрировать нового пользователя</a>
+        </div>
+        } else if (Model.RoleId == 2)
+        { 
+        <div class="col-md-4">
+            <a class="btn btn-primary" asp-controller="Course" asp-action="Index">Работа с Курсами</a>
+        </div>
+         }
+    }
+</div>

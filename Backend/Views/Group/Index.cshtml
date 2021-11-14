@@ -1,0 +1,23 @@
+﻿@model IS_distance_learning.Models.GroupModel
+
+@{
+    ViewData["Title"] = "Группы";
+}
+
+<table class="table">
+    @foreach (Group g in Model.Groups)
+    {
+        <tr>
+            <td>@g.Name</td>
+            <td>@g.Code</td>
+            <td>
+                <a asp-action="Update" asp-controller="Group" name="@g.Id" class="btn btn-info">Редактировать</a>
+            </td>
+            <td>
+                <form method="post">
+                    <button asp-action="Delete" asp-controller="Group" name="@g.Id" class="btn btn-danger">Удалить</button>
+                </form>
+            </td>
+        </tr>
+    }
+</table>
