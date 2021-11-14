@@ -21,11 +21,21 @@
                     <li class="nav-item">
                         <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Мои курсы</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Войти</a>
-                    </li>
+                    @{ 
+                        if(!User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Войти</a>
+                            </li>
+                        } else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Logout">Выйти</a>
+                            </li>
+                        }
+                    }
                 </ul>
-                <a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Регистрация</a>
+                @*<a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Регистрация</a>*@
             </div>
         </div>
     </nav>
