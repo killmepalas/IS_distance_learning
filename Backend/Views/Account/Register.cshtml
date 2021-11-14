@@ -44,10 +44,21 @@
             </div>
             <div class="form-group">
                 <label asp-for="RoleId" class="control-label">Роль</label>
-                <select name="RoleId" asp-for="RoleId">
+                <select name="RoleId" id="role_select" asp-for="RoleId">
                     <option value="1">Администратор</option>
                     <option value="2">Преподаватель</option>
                     <option value="3">Студент</option>
+                </select>
+            </div>
+            <div class="form-group hide" id="group_select">
+                <label for="GroupId" class="control-label">Группа</label>
+                <select name="GroupId">
+                    @{ 
+                        foreach(Group g in @ViewBag.Groups)
+                            {
+                                <option value="@g.Id">@g.Name  @g.Code</option>
+                            }
+                    }
                 </select>
             </div>
             <div class="form-group">
