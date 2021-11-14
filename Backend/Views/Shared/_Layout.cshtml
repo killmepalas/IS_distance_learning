@@ -11,31 +11,35 @@
 <header>
     <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
         <div class="container">
-            <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Центр дистанционного обучения</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                     aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1 justify-content-between">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-controller="Home" asp-action="Index">Мои курсы</a>
-                    </li>
-                    @{ 
-                        if(!User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item">
+                <div class="navbar-nav flex-grow-1 justify-content-between">
+                    <span class="nav-item">
+                        <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Центр дистанционного обучения</a>
+                    </span>
+                    <div class="nav-item d-inline-flex">
+                        @{
+                            if (!User.Identity.IsAuthenticated)
+                            {
+                            <span class="nav-item">
                                 <a class="nav-link text-dark" asp-controller="Account" asp-action="Login">Войти</a>
-                            </li>
-                        } else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-controller="Account" asp-action="Logout">Выйти</a>
-                            </li>
+                            </span>
+                            }
+                            else
+                            {
+                                <span class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Account" asp-action="Index">Мой профиль</a>
+                                </span>
+                                <span class="nav-item">
+                                    <a class="nav-link text-dark" asp-controller="Account" asp-action="Logout">Выйти</a>
+                                </span>
+                            }
                         }
-                    }
-                </ul>
-                @*<a class="nav-link text-dark" asp-controller="Account" asp-action="Register">Регистрация</a>*@
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
