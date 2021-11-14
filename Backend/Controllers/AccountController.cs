@@ -20,10 +20,12 @@ namespace IS_distance_learning.Controllers
         }
         [HttpGet]
         [Authorize(Roles = "admin")]
-        public IActionResult Register()
+        public async Task<IActionResult> Register()
         {
+            ViewBag.Groups = await _context.Groups.ToListAsync();
             return View();
         }
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "admin")]
@@ -34,10 +36,10 @@ namespace IS_distance_learning.Controllers
                 Account account = await _context.Accounts.FirstOrDefaultAsync(u => u.Login == model.Login);
                 if (account == null)
                 {
-                    account = new Account { Login = model.Login, Password = model.Password, Name = model.Name, LastName = model.LastName, MiddleName = model.MiddleName, RoleId = model.RoleId };
+                    account = new Account { Login = model.Login, Password = model.Password, Name = model.Name, LastName = model.LastName, MiddleName = model.MiddleName, RoleId = model.RoleId, GroupId = model.GroupId};
 
                     var role = await _context.Roles.FindAsync(model.RoleId);
-                    account.Role = new Role(){Name = role.Name};
+                    account.Role = role;
 
                     _context.Accounts.Add(account);
                     await _context.SaveChangesAsync();

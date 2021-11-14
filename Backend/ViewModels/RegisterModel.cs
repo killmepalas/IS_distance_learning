@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using IS_distance_learning.Models;
 
 namespace IS_distance_learning.ViewModels
 {
@@ -37,5 +38,8 @@ namespace IS_distance_learning.ViewModels
         [Required(ErrorMessage = "Не указана роль")]
         public int RoleId { get; set; }
         public string Role { get; set; }
+        
+        public int? GroupId { get; set; }
+        public Group Group { get; set; }
     }
 }
