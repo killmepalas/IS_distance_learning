@@ -44,8 +44,6 @@ namespace IS_distance_learning.Controllers
                     _context.Accounts.Add(account);
                     await _context.SaveChangesAsync();
 
-                    await Authenticate(account);
-
                     return RedirectToAction("Index", "Home");
                 }
                 else
