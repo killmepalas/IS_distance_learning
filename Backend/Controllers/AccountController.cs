@@ -105,7 +105,7 @@ namespace IS_distance_learning.Controllers
         public async Task<IActionResult> Index()
         {
             var accountId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var account = await _context.Accounts.FindAsync(accountId);
+            var account = await _context.Accounts.Include(x => x.Group).FirstOrDefaultAsync(x => x.Id == accountId);
             return View(account);
         }
     }
