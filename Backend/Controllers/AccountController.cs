@@ -20,10 +20,12 @@ namespace IS_distance_learning.Controllers
         }
         [HttpGet]
         [Authorize(Roles = "admin")]
-        public IActionResult Register()
+        public async Task<IActionResult> Register()
         {
+            ViewBag.Groups = await _context.Groups.ToListAsync();
             return View();
         }
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "admin")]
