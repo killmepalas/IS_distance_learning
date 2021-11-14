@@ -9,10 +9,11 @@ namespace IS_distance_learning
 {
     public class AppDBContext : DbContext
     {
-        public DbSet<Account> Account { get; set; }
-        public DbSet<Role> Role { get; set; }
-        public DbSet<Course> Course { get; set; }
-        public DbSet<Test> Test { get; set; }
+        public DbSet<Account> Accounts { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<Course> Courses { get; set; }
+        public DbSet<Test> Tests { get; set; }
+        public DbSet<Group> Groups { get; set; }
 
         public AppDBContext(DbContextOptions<AppDBContext> options) : base(options) { }
 
@@ -35,7 +36,7 @@ namespace IS_distance_learning
                 MiddleName = "admin",
                 LastName = "admin",
                 RoleId = 1,
-                Role = "admin",
+                GroupId = null
             });
         }
     }
