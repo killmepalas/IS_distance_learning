@@ -6,36 +6,39 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IS_distance_learning.Controllers
 {
     public class AccountController : Controller
     {
-        private AppDBContext _context;
+        private readonly AppDBContext _context;
         public AccountController(AppDBContext context)
         {
             _context = context;
         }
         [HttpGet]
+        [Authorize(Roles = "admin")]
         public IActionResult Register()
         {
             return View();
         }
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
         public async Task<IActionResult> Register(RegisterModel model)
         {
             if (ModelState.IsValid)
             {
-                Account account = await _context.Account.FirstOrDefaultAsync(u => u.Login == model.Login);
+                Account account = await _context.Accounts.FirstOrDefaultAsync(u => u.Login == model.Login);
                 if (account == null)
                 {
                     account = new Account { Login = model.Login, Password = model.Password, Name = model.Name, LastName = model.LastName, MiddleName = model.MiddleName, RoleId = model.RoleId };
 
-                    var role = await _context.Role.FindAsync(model.RoleId);
-                    account.Role = role.Name;
+                    var role = await _context.Roles.FindAsync(model.RoleId);
+                    account.Role = new Role(){Name = role.Name};
 
-                    _context.Account.Add(account);
+                    _context.Accounts.Add(account);
                     await _context.SaveChangesAsync();
 
                     await Authenticate(account);
@@ -58,8 +61,8 @@ namespace IS_distance_learning.Controllers
         {
             if (ModelState.IsValid)
             {
-                Account account = await _context.Account
-                    .FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
+                Account account = await _context.Accounts
+                    .Include(a => a.Role).FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
                 if (account != null)
                 {
                     await Authenticate(account); // аутентификация
@@ -76,7 +79,8 @@ namespace IS_distance_learning.Controllers
             var claims = new List<Claim>
             {
                 new Claim(ClaimsIdentity.DefaultNameClaimType, account.Login),
-                new Claim(ClaimsIdentity.DefaultRoleClaimType, account.Role)
+                new Claim(ClaimsIdentity.DefaultRoleClaimType, account.Role.Name),
+                new Claim(ClaimTypes.NameIdentifier, account.Id.ToString())
             };
             // создаем объект ClaimsIdentity
             ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType,
@@ -85,10 +89,21 @@ namespace IS_distance_learning.Controllers
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
         }
 
+        [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Login", "Account");
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Index()
+        {
+            var accountId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var account = await _context.Accounts.FindAsync(accountId);
+            return View(account);
         }
     }
 }
