@@ -13,4 +13,5 @@ $select.change(function () {
     }
     if ($(this).val() == "1") {
         $('#group_select').hide();
+    }
 });
