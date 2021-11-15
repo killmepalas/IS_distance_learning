@@ -19,6 +19,7 @@ namespace IS_distance_learning.Controllers
         {
             _context = context;
         }
+        
         [HttpGet]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Register()
@@ -45,18 +46,20 @@ namespace IS_distance_learning.Controllers
                     _context.Accounts.Add(account);
                     await _context.SaveChangesAsync();
 
-                    return RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "Account");
                 }
                 else
                     ModelState.AddModelError("", "Некорректные данные или аккаунт с таким именем уже существует.");
             }
             return View(model);
         }
+        
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginModel model)
@@ -75,6 +78,7 @@ namespace IS_distance_learning.Controllers
             }
             return View(model);
         }
+        
         private async Task Authenticate(Account account)
         {
             // создаем один claim
@@ -110,26 +114,27 @@ namespace IS_distance_learning.Controllers
 
         [HttpGet]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> Index(int? RoleId, int? GroupId)
+        public async Task<IActionResult> Index(int roleId = 0, int groupId = 0)
         {
             ViewBag.Groups = await _context.Groups.ToListAsync();
             ViewBag.Roles = await _context.Roles.ToListAsync();
-            if (RoleId == 0)
+            if (roleId == 0)
             {
-                var SelectedAccounts = new AccountModel { SelectedAccounts = await _context.Accounts.Include(g => g.Group).ToListAsync() };
-                return View(SelectedAccounts);
+                var selectedAccounts = new AccountModel { SelectedAccounts = await _context.Accounts.Include(g => g.Group).ToListAsync() };
+                return View(selectedAccounts);
             }
-            else if (RoleId != 0 && GroupId == 0)
+            else if (groupId == 0)
             {
-                var SelectedAccounts = new AccountModel { SelectedAccounts = await _context.Accounts.Include(g => g.Group).Where(acc => acc.RoleId == RoleId).ToListAsync() };
-                return View(SelectedAccounts);
+                var selectedAccounts = new AccountModel { SelectedAccounts = await _context.Accounts.Include(g => g.Group).Where(acc => acc.RoleId == roleId).ToListAsync() };
+                return View(selectedAccounts);
             }
             else
             {
-                var SelectedAccounts = new AccountModel { SelectedAccounts = await _context.Accounts.Include(g => g.Group).Where(acc => acc.RoleId == RoleId && acc.GroupId == GroupId).ToListAsync() };
-                return View(SelectedAccounts);
+                var selectedAccounts = new AccountModel { SelectedAccounts = await _context.Accounts.Include(g => g.Group).Where(acc => acc.RoleId == roleId && acc.GroupId == groupId).ToListAsync() };
+                return View(selectedAccounts);
             }
         }
+        
         [HttpGet]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Update(int id)
