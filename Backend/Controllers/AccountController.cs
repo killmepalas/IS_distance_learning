@@ -8,6 +8,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
+using System.Linq;
 
 namespace IS_distance_learning.Controllers
 {
@@ -63,7 +64,7 @@ namespace IS_distance_learning.Controllers
             if (ModelState.IsValid)
             {
                 Account account = await _context.Accounts
-                    .Include(a => a.Role).FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
+                    .Include(r => r.Role).FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
                 if (account != null)
                 {
                     await Authenticate(account); // аутентификация
@@ -100,11 +101,87 @@ namespace IS_distance_learning.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Profile()
         {
             var accountId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var account = await _context.Accounts.Include(x => x.Group).FirstOrDefaultAsync(x => x.Id == accountId);
+            var account = await _context.Accounts.Include(g => g.Group).Include(r => r.Role).FirstOrDefaultAsync(x => x.Id == accountId);
             return View(account);
+        }
+
+        [HttpGet]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Index(int? RoleId, int? GroupId)
+        {
+            ViewBag.Groups = await _context.Groups.ToListAsync();
+            ViewBag.Roles = await _context.Roles.ToListAsync();
+            if (RoleId == 0)
+            {
+                var SelectedAccounts = new AccountModel { SelectedAccounts = await _context.Accounts.Include(g => g.Group).ToListAsync() };
+                return View(SelectedAccounts);
+            }
+            else if (RoleId != 0 && GroupId == 0)
+            {
+                var SelectedAccounts = new AccountModel { SelectedAccounts = await _context.Accounts.Include(g => g.Group).Where(acc => acc.RoleId == RoleId).ToListAsync() };
+                return View(SelectedAccounts);
+            }
+            else
+            {
+                var SelectedAccounts = new AccountModel { SelectedAccounts = await _context.Accounts.Include(g => g.Group).Where(acc => acc.RoleId == RoleId && acc.GroupId == GroupId).ToListAsync() };
+                return View(SelectedAccounts);
+            }
+        }
+        [HttpGet]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Update(int id)
+        {
+            ViewBag.Groups = await _context.Groups.ToListAsync();
+            var account = await _context.Accounts.FindAsync(id);
+            if (account == null)
+            {
+                return NotFound();
+            }
+
+            return View(account);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Update(int id, Account model)
+        {
+            var account = await _context.Accounts.FindAsync(id);
+            if (account == null)
+            {
+                return NotFound();
+            }
+
+            account.Login = model.Login;
+            account.Password = model.Password;
+            account.Name = model.Name;
+            account.LastName = model.LastName;
+            account.MiddleName = model.MiddleName;
+            account.RoleId = model.RoleId;
+            account.GroupId = model.GroupId;
+            _context.Accounts.Update(account);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index", "Account", new { RoleId = 0, GroupId = 0 });
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "admin")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var account = await _context.Accounts.FindAsync(id);
+            if (account != null)
+            {
+                _context.Accounts.Remove(account);
+                await _context.SaveChangesAsync();
+                return RedirectToAction("Index", "Account");
+            }
+            else
+            {
+                return NotFound();
+            }
         }
     }
 }
