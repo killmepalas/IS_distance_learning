@@ -1,11 +1,11 @@
 ﻿@model IS_distance_learning.Models.Account
-@{ 
+@*@{ 
     var parms = new Dictionary<string, string>
             {
                 { "RoleId", "0" },
                 { "GroupId", "0" }
             };
-}
+}*@
 @{
     ViewData["Title"] = User.Identity.Name;
 }
@@ -42,8 +42,12 @@
         if (Model.RoleId == 1)
         { 
         <div class="col-md-6">
-            <a class="btn btn-primary mb-2" asp-controller="Account" asp-all-route-data="parms" asp-action="Index">Работа с пользователями</a>
+            <a class="btn btn-primary mb-2" asp-controller="Account" asp-action="Index">Работа с пользователями</a>
             <a class="btn btn-primary mb-2" asp-controller="Group" asp-action="Index">Работа с учебными группами</a>
+            @*<form method="get">
+                <input value="0" type="hidden"/>*@
+                <a class="btn btn-primary" asp-controller="Course" asp-action="Index">Работа с Курсами</a>
+            @*</form>*@
         </div>
         } else if (Model.RoleId == 2)
         { 
