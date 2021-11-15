@@ -41,27 +41,33 @@
             <td>
                 @Html.DisplayFor(modelItem => item.Account.LastName)
             </td>
-            <td>
-                <a class="btn btn-info" asp-action="Update" asp-route-id="@item.Id">Редактировать</a>
-            </td>
-            <td>
-                <form method="get">
-                    <input name="id" class="hide disabled invisible" type="hidden" value="@item.Id" />
-                    <input type="submit" asp-action="AddGroups" asp-controller="Course" class="btn btn-info" value="Прикрепить группы" />
-                </form>
-            </td>
-            <td>
-                <form method="get">
-                    <input name="id" class="hide disabled invisible" type="hidden" value="@item.Id" />
-                    <input type="submit" asp-action="DeleteGroups" asp-controller="Course" class="btn btn-info" value="Удалить группы" />
-                </form>
-            </td>
-            <td>
-                <form method="post">
-                    <input name="id" class="hide disabled invisible" type="hidden" value="@item.Id" />
-                    <input type="submit" asp-action="Delete" asp-controller="Course" class="btn btn-danger" value="Удалить курс" />
-                </form>
-            </td>
+            @if (item.Account.Login == User.Identity.Name)
+            {
+                <td>
+                    <a class="btn btn-info" asp-action="Update" asp-route-id="@item.Id">Редактировать</a>
+                </td>
+                <td>
+                    <form method="get">
+                        <input name="id" class="hide disabled invisible" type="hidden" value="@item.Id" />
+                        <input type="submit" asp-action="AddGroups" asp-controller="Course" class="btn btn-info" value="Прикрепить группы" />
+                    </form>
+                </td>
+                <td>
+                    <form method="get">
+                        <input name="id" class="hide disabled invisible" type="hidden" value="@item.Id" />
+                        <input type="submit" asp-action="DeleteGroups" asp-controller="Course" class="btn btn-info" value="Удалить группы" />
+                    </form>
+                </td>
+            }
+            @if (item.Account.Login == User.Identity.Name || User.IsInRole("admin"))
+                {
+                <td>
+                    <form method="post">
+                        <input name="id" class="hide disabled invisible" type="hidden" value="@item.Id" />
+                        <input type="submit" asp-action="Delete" asp-controller="Course" class="btn btn-danger" value="Удалить курс" />
+                    </form>
+                </td>
+                }
         </tr>
 }
     </tbody>
