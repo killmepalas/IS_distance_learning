@@ -3,10 +3,16 @@
 @{
     ViewData["Title"] = "Группы";
 }
-<div class="col-md-4">
+<div class="col-md-4 mb-2">
     <a asp-action="Create" asp-controller="Group" class="btn btn-primary">Добавить новую группу</a>
 </div>
-<table class="table">
+<table border="1" bordercolor="#dee2e6" class="table">
+    <tr>
+        <th>Название группы</th>
+        <th>Код группы</th>
+        <th>Редактировать</th>
+        <th>Удалить</th>
+    </tr>
     @foreach (Group g in Model)
     {
         <tr>
@@ -20,8 +26,8 @@
             </td>
             <td>
                 <form method="post">
-                    <input name="id" class="hide disabled invisible" type="hidden" value="@g.Id"/>
-                    <input type="submit" asp-action="Delete" asp-controller="Group" class="btn btn-danger" value="Удалить"/>
+                    <input name="id" class="hide disabled invisible" type="hidden" value="@g.Id" />
+                    <input type="submit" asp-action="Delete" asp-controller="Group" class="btn btn-danger" value="Удалить" />
                 </form>
             </td>
         </tr>

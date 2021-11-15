@@ -1,0 +1,42 @@
+﻿@model IS_distance_learning.Models.Course
+
+@{
+    ViewData["Title"] = "Прикрепление групп";
+}
+
+<h1>Прикрепление групп</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="AddGroups">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <input asp-for="Name" value="@Model.Name" type="hidden" />
+            <input asp-for="AccountId" type="hidden" value="@Model.AccountId" />
+            @if (ViewBag.Groups.Count != 0)
+            {
+                <div class="form-group">
+                    <label for="SelectedGroups" class="control-label">Выберите группы для прикрепления к курсу</label>
+                    <select class="form-control overflow-auto custom-select" name="SelectedGroups" asp-items="@ViewBag.Groups" multiple>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <input type="submit" value="Прикрепить группы" class="btn btn-primary" />
+                </div>
+            } else
+            {
+                <h4>Нет групп для добавления</h4>
+            }
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Вернуться к списку курсов</a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
