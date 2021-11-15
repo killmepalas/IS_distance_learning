@@ -99,12 +99,8 @@ namespace IS_distance_learning.Controllers
 
         [HttpGet]
         [Authorize(Roles = "teacher")]
-        public async Task<IActionResult> AddGroups(int? id)
+        public async Task<IActionResult> AddGroups(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
             var course = await _context.Courses.FindAsync(id);
             if (course == null)
             {
@@ -164,12 +160,8 @@ namespace IS_distance_learning.Controllers
 
         [HttpGet]
         [Authorize(Roles = "teacher")]
-        public async Task<IActionResult> DeleteGroups(int? id)
+        public async Task<IActionResult> DeleteGroups(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
             var course = await _context.Courses.FindAsync(id);
             if (course == null)
             {
@@ -195,8 +187,7 @@ namespace IS_distance_learning.Controllers
             {
                 return NotFound();
             }
-            var courses = await _context.Courses.Include(g => g.Groups).ToListAsync();
-            var course = courses.Find(c => c.Id == model.Id);
+            var course = await _context.Courses.Include(g => g.Groups).FirstOrDefaultAsync(c => c.Id == model.Id);
             if (ModelState.IsValid)
             {
                 try
