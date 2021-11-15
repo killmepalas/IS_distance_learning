@@ -39,10 +39,11 @@ namespace IS_distance_learning.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(course);
+                await _context.AddAsync(course);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
             ViewData["AccountId"] = new SelectList(_context.Accounts, "Id", "LastName", course.AccountId);
             return View(course);
         }
@@ -54,11 +55,13 @@ namespace IS_distance_learning.Controllers
             {
                 return NotFound();
             }
+
             var course = await _context.Courses.FindAsync(id);
             if (course == null)
             {
                 return NotFound();
             }
+
             ViewData["AccountId"] = new SelectList(_context.Accounts, "Id", "LastName", course.AccountId);
             return View(course);
         }
@@ -82,7 +85,7 @@ namespace IS_distance_learning.Controllers
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CourseExists(course.Id))
+                    if (!await CourseExistsAsync(course.Id))
                     {
                         return NotFound();
                     }
@@ -91,8 +94,11 @@ namespace IS_distance_learning.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction("Index", "Course"); ;
+
+                return RedirectToAction("Index", "Course");
+                ;
             }
+
             ViewData["AccountId"] = new SelectList(_context.Accounts, "Id", "LastName", course.AccountId);
             return View(course);
         }
@@ -106,44 +112,50 @@ namespace IS_distance_learning.Controllers
             {
                 return NotFound();
             }
+
             var groups = await _context.Groups.Where(gr => !gr.Courses.Contains(course)).ToListAsync();
-            List<SelectListItem> ItemList = new List<SelectListItem> { };
+            List<SelectListItem> itemList = new List<SelectListItem> { };
             foreach (var g in groups)
             {
-                SelectListItem selListItem = new SelectListItem() { Value = g.Id.ToString(), Text = g.Name + "  " + g.Code };
-                ItemList.Add(selListItem);
+                SelectListItem selListItem = new SelectListItem()
+                    {Value = g.Id.ToString(), Text = g.Name + "  " + g.Code};
+                itemList.Add(selListItem);
             }
-            ViewBag.Groups = ItemList;
+
+            ViewBag.Groups = itemList;
             return View(course);
         }
 
         [Authorize(Roles = "teacher")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> AddGroups(int id, [Bind("Id,Name,AccountId")] Course model, int[] SelectedGroups)
+        public async Task<IActionResult> AddGroups(int id, [Bind("Id,Name,AccountId")] Course model,
+            int[] selectedGroups)
         {
             if (id != model.Id)
             {
                 return NotFound();
             }
+
             var course = await _context.Courses.FindAsync(model.Id);
             if (ModelState.IsValid)
             {
                 try
                 {
-                    if (SelectedGroups != null)
+                    if (selectedGroups != null)
                     {
-                        foreach (var g in _context.Groups.Where(gr => SelectedGroups.Contains(gr.Id)))
+                        foreach (var g in _context.Groups.Where(gr => selectedGroups.Contains(gr.Id)))
                         {
                             course.Groups.Add(g);
                         }
                     }
+
                     _context.Update(course);
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CourseExists(course.Id))
+                    if (!await CourseExistsAsync(course.Id))
                     {
                         return NotFound();
                     }
@@ -152,8 +164,11 @@ namespace IS_distance_learning.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction("Index", "Course"); ;
+
+                return RedirectToAction("Index", "Course");
+                ;
             }
+
             ViewData["AccountId"] = new SelectList(_context.Accounts, "Id", "LastName", course.AccountId);
             return View(course);
         }
@@ -167,44 +182,50 @@ namespace IS_distance_learning.Controllers
             {
                 return NotFound();
             }
+
             var groups = await _context.Groups.Where(gr => gr.Courses.Contains(course)).ToListAsync();
-            List<SelectListItem> ItemList = new List<SelectListItem> { };
+            List<SelectListItem> itemList = new List<SelectListItem> { };
             foreach (var g in groups)
             {
-                SelectListItem selListItem = new SelectListItem() { Value = g.Id.ToString(), Text = g.Name + "  " + g.Code };
-                ItemList.Add(selListItem);
+                SelectListItem selListItem = new SelectListItem()
+                    {Value = g.Id.ToString(), Text = g.Name + "  " + g.Code};
+                itemList.Add(selListItem);
             }
-            ViewBag.Groups = ItemList;
+
+            ViewBag.Groups = itemList;
             return View(course);
         }
 
         [Authorize(Roles = "teacher")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteGroups(int id, [Bind("Id,Name,AccountId")] Course model, int[] SelectedGroups)
+        public async Task<IActionResult> DeleteGroups(int id, [Bind("Id,Name,AccountId")] Course model,
+            int[] selectedGroups)
         {
             if (id != model.Id)
             {
                 return NotFound();
             }
+
             var course = await _context.Courses.Include(g => g.Groups).FirstOrDefaultAsync(c => c.Id == model.Id);
             if (ModelState.IsValid)
             {
                 try
                 {
-                    if (SelectedGroups != null)
+                    if (selectedGroups != null)
                     {
-                        foreach (var g in _context.Groups.Where(gr => SelectedGroups.Contains(gr.Id)))
+                        foreach (var g in _context.Groups.Where(gr => selectedGroups.Contains(gr.Id)))
                         {
                             course.Groups.Remove(g);
                         }
-                    _context.Courses.Update(course);
-                    await _context.SaveChangesAsync();
+
+                        _context.Courses.Update(course);
+                        await _context.SaveChangesAsync();
                     }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CourseExists(course.Id))
+                    if (!await CourseExistsAsync(course.Id))
                     {
                         return NotFound();
                     }
@@ -213,8 +234,11 @@ namespace IS_distance_learning.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction("Index", "Course"); ;
+
+                return RedirectToAction("Index", "Course");
+                ;
             }
+
             return View(course);
         }
 
@@ -235,9 +259,9 @@ namespace IS_distance_learning.Controllers
             }
         }
 
-        private bool CourseExists(int id)
+        private async Task<bool> CourseExistsAsync(int id)
         {
-            return _context.Courses.Any(e => e.Id == id);
+            return await _context.Courses.AnyAsync(e => e.Id == id);
         }
     }
 }

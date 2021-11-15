@@ -43,7 +43,7 @@ namespace IS_distance_learning.Controllers
                     var role = await _context.Roles.FindAsync(model.RoleId);
                     account.Role = role;
 
-                    _context.Accounts.Add(account);
+                    await _context.Accounts.AddAsync(account);
                     await _context.SaveChangesAsync();
 
                     return RedirectToAction("Index", "Account");
