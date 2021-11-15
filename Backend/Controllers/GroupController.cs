@@ -61,7 +61,7 @@ namespace IS_distance_learning.Controllers
             var group = await _context.Groups.FindAsync(id);
             if (group == null)
             {
-                ModelState.AddModelError("", "Нет такой группы.");
+                return NotFound();
             }
 
             return View(group);
@@ -75,8 +75,7 @@ namespace IS_distance_learning.Controllers
             var group = await _context.Groups.FindAsync(id);
             if (group == null)
             {
-                ModelState.AddModelError("", "Нет такой группы");
-                return View(model);
+                return NotFound();
             }
 
             group.Name = model.Name;
@@ -99,10 +98,8 @@ namespace IS_distance_learning.Controllers
             }
             else
             {
-                ModelState.AddModelError("", "Нет такой группы.");
+                return NotFound();
             }
-            
-            return View();
         }
     }
 }
