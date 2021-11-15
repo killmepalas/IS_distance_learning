@@ -1,0 +1,68 @@
+﻿@model IEnumerable<IS_distance_learning.Models.Course>
+
+@{
+    ViewData["Title"] = "Курсы";
+}
+
+<h1>Курсы</h1>
+
+<div class="col-md-4 mb-2">
+    <a class="btn btn-primary" asp-action="Create">Добавить курс</a>
+</div>
+<table border="1" bordercolor="#dee2e6" class="table">
+    <thead>
+        <tr>
+            <th>
+                Название курса
+            </th>
+            <th>
+                Ведущий преподаватель
+            </th>
+            <th>
+                Редактирование
+            </th>
+            <th>
+                Прикрепление групп
+            </th>
+            <th>
+                Удаление групп
+            </th>
+            <th>
+                Удаление
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Account.LastName)
+            </td>
+            <td>
+                <a class="btn btn-info" asp-action="Update" asp-route-id="@item.Id">Редактировать</a>
+            </td>
+            <td>
+                <form method="get">
+                    <input name="id" class="hide disabled invisible" type="hidden" value="@item.Id" />
+                    <input type="submit" asp-action="AddGroups" asp-controller="Course" class="btn btn-info" value="Прикрепить группы" />
+                </form>
+            </td>
+            <td>
+                <form method="get">
+                    <input name="id" class="hide disabled invisible" type="hidden" value="@item.Id" />
+                    <input type="submit" asp-action="DeleteGroups" asp-controller="Course" class="btn btn-info" value="Удалить группы" />
+                </form>
+            </td>
+            <td>
+                <form method="post">
+                    <input name="id" class="hide disabled invisible" type="hidden" value="@item.Id" />
+                    <input type="submit" asp-action="Delete" asp-controller="Course" class="btn btn-danger" value="Удалить курс" />
+                </form>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
