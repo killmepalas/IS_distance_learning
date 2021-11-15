@@ -25,7 +25,7 @@ namespace IS_distance_learning
                 .AddCookie(options =>
                 {
                     options.LoginPath = new Microsoft.AspNetCore.Http.PathString("/Account/Login");
-                    options.AccessDeniedPath = new Microsoft.AspNetCore.Http.PathString("/Account/Login");
+                    options.AccessDeniedPath = new Microsoft.AspNetCore.Http.PathString("/Home/Error");
                 });
             string connection = "Data Source=" + Environment.MachineName.ToString() + ";Initial Catalog=Distance_learningDB;User ID=admin;Password=semiconductor;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
             services.AddDbContext<AppDBContext>(options =>
