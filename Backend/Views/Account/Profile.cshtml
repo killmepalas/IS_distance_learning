@@ -1,0 +1,55 @@
+﻿@model IS_distance_learning.Models.Account
+@{ 
+    var parms = new Dictionary<string, string>
+            {
+                { "RoleId", "0" },
+                { "GroupId", "0" }
+            };
+}
+@{
+    ViewData["Title"] = User.Identity.Name;
+}
+
+<h1>Профиль</h1>
+
+<hr />
+
+<div class="row p-3">
+    <div class="col-md-6 d-flex flex-column justify-content-around">
+        <div class="d-flex col-md-8 justify-content-around">
+            <h5>@Model.LastName</h5>
+            <h5>@Model.Name</h5>
+            <h5>@Model.MiddleName</h5>
+        </div>
+        <div class="d-flex flex-column">
+            <div class="d-flex col-md-8">
+                <h6 class="mr-2">Роль:</h6>
+                <h6>@Model.Role.Name</h6>
+            </div>
+
+            @{
+                if (Model.RoleId == 3)
+                {
+                    <div class="d-flex col-md-8">
+                        <h6 class="mr-2">Группа:</h6>
+                        <h6>@Model?.Group.Name</h6>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+    @{ 
+        if (Model.RoleId == 1)
+        { 
+        <div class="col-md-6">
+            <a class="btn btn-primary mb-2" asp-controller="Account" asp-all-route-data="parms" asp-action="Index">Работа с пользователями</a>
+            <a class="btn btn-primary mb-2" asp-controller="Group" asp-action="Index">Работа с учебными группами</a>
+        </div>
+        } else if (Model.RoleId == 2)
+        { 
+        <div class="col-md-6">
+            <a class="btn btn-primary" asp-controller="Course" asp-action="Index">Работа с Курсами</a>
+        </div>
+         }
+    }
+</div>
