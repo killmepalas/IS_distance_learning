@@ -19,11 +19,28 @@ namespace IS_distance_learning.Controllers
             _context = context;
         }
         
+        // TODO: refactor this garbage
         [HttpGet]
         [Authorize(Roles = "teacher,admin")]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? id)
         {
-            var courses = await _context.Courses.Include(c => c.Account).ToListAsync();
+            List<Course> courses;
+            if (id == null)
+            {
+                if (User.IsInRole("admin"))
+                {
+                    courses = await _context.Courses.Include(x => x.Account).ToListAsync();
+                }
+                else
+                {
+                    return RedirectToAction("Error", "Home");
+                }
+            }
+            else
+            {
+                courses = await _context.Courses.Include(x => x.Account).Where(x => x.AccountId == id).ToListAsync();
+            }
+            
             return View(courses);
         }
 
