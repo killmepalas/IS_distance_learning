@@ -13,6 +13,8 @@ namespace IS_distance_learning
         public DbSet<Role> Roles { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<Test> Tests { get; set; }
+        public DbSet<Question> Questions { get; set; }
+        public DbSet<Answer> Answers { get; set; }
         public DbSet<Group> Groups { get; set; }
 
         public AppDBContext(DbContextOptions<AppDBContext> options) : base(options) { }
@@ -38,6 +40,12 @@ namespace IS_distance_learning
                 RoleId = 1,
                 GroupId = null
             });
+
+            modelBuilder.Entity<Answer>()
+                .HasOne<Question>(x => x.Question)
+                .WithMany(x => x.Answers)
+                .HasForeignKey(x => x.QuestionId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }
