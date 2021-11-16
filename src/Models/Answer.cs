@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace IS_distance_learning.Models
 {
@@ -6,10 +7,8 @@ namespace IS_distance_learning.Models
     {
         [Key]
         public int Id { get; set; }
-        
         [Required]
         public string Text { get; set; }
-        
         [Required]
         public bool IsRight { get; set; }
         

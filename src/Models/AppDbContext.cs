@@ -9,14 +9,17 @@ namespace IS_distance_learning.Models
 {
     public class AppDbContext : DbContext
     {
-        public DbSet<Account> Accounts { get; set; }
+        public DbSet<Admin> Admins { get; set; }
+        public DbSet<Teacher> Teachers { get; set; }
+        public DbSet<Student> Students { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<Group> Groups { get; set; }
         public DbSet<Course> Courses { get; set; }
+        public DbSet<GroupCourse> GroupCourse { get; set; }
         public DbSet<Test> Tests { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }
-        public DbSet<StudentAnswer> StudentAnswers { get; set; }
-        public DbSet<Group> Groups { get; set; }
+        public DbSet<AnswerStudent> AnswerStudent { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
@@ -30,7 +33,7 @@ namespace IS_distance_learning.Models
                     new Role{Id=3, Name="student"}
                 });
 
-            modelBuilder.Entity<Account>().HasData(new Account
+            modelBuilder.Entity<Admin>().HasData(new Admin
             {
                 Id = 1,
                 Login = "admin",
@@ -38,27 +41,8 @@ namespace IS_distance_learning.Models
                 Name = "admin",
                 MiddleName = "admin",
                 LastName = "admin",
-                RoleId = 1,
-                GroupId = null
+                RoleId = 1
             });
-
-            modelBuilder.Entity<Answer>()
-                .HasOne<Question>(x => x.Question)
-                .WithMany(x => x.Answers)
-                .HasForeignKey(x => x.QuestionId)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<StudentAnswer>()
-                .HasOne<Account>(x => x.Student)
-                .WithMany()
-                .HasForeignKey(x => x.StudentId)
-                .OnDelete(DeleteBehavior.NoAction);
-
-            modelBuilder.Entity<StudentAnswer>()
-                .HasOne<Answer>(x => x.Answer)
-                .WithOne()
-                .HasForeignKey((StudentAnswer x) => x.AnswerId)
-                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }
