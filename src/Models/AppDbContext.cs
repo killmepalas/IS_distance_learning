@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 using IS_distance_learning.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace IS_distance_learning
+namespace IS_distance_learning.Models
 {
-    public class AppDBContext : DbContext
+    public class AppDbContext : DbContext
     {
         public DbSet<Account> Accounts { get; set; }
         public DbSet<Role> Roles { get; set; }
@@ -15,9 +15,10 @@ namespace IS_distance_learning
         public DbSet<Test> Tests { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }
+        public DbSet<StudentAnswer> StudentAnswers { get; set; }
         public DbSet<Group> Groups { get; set; }
 
-        public AppDBContext(DbContextOptions<AppDBContext> options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -45,7 +46,19 @@ namespace IS_distance_learning
                 .HasOne<Question>(x => x.Question)
                 .WithMany(x => x.Answers)
                 .HasForeignKey(x => x.QuestionId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<StudentAnswer>()
+                .HasOne<Account>(x => x.Student)
+                .WithMany()
+                .HasForeignKey(x => x.StudentId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder.Entity<StudentAnswer>()
+                .HasOne<Answer>(x => x.Answer)
+                .WithOne()
+                .HasForeignKey((StudentAnswer x) => x.AnswerId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

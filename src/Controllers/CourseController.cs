@@ -12,9 +12,9 @@ namespace IS_distance_learning.Controllers
 {
     public class CourseController : Controller
     {
-        private readonly AppDBContext _context;
+        private readonly AppDbContext _context;
 
-        public CourseController(AppDBContext context)
+        public CourseController(AppDbContext context)
         {
             _context = context;
         }
