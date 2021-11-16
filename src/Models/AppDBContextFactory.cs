@@ -9,14 +9,14 @@ using System.Threading.Tasks;
 
 namespace IS_distance_learning.Models
 {
-    public class AppDBContextFactory : IDesignTimeDbContextFactory<AppDBContext>
+    public class AppDBContextFactory : IDesignTimeDbContextFactory<AppDbContext>
     {
-        public AppDBContext CreateDbContext(string[] args)
+        public AppDbContext CreateDbContext(string[] args)
         {
-            var optionsBuilder = new DbContextOptionsBuilder<AppDBContext>();
+            var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
             string connection = "Data Source=" + Environment.MachineName.ToString() + ";Initial Catalog=Distance_learningDB;User ID=admin;Password=semiconductor;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
             optionsBuilder.UseSqlServer(connection, opts => opts.CommandTimeout((int)TimeSpan.FromMinutes(10).TotalSeconds));
-            return new AppDBContext(optionsBuilder.Options);
+            return new AppDbContext(optionsBuilder.Options);
         }
     }
 }

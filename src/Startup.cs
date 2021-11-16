@@ -1,4 +1,5 @@
 using System;
+using IS_distance_learning.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -28,7 +29,7 @@ namespace IS_distance_learning
                     options.AccessDeniedPath = new Microsoft.AspNetCore.Http.PathString("/Home/Error");
                 });
             string connection = "Data Source=" + Environment.MachineName.ToString() + ";Initial Catalog=Distance_learningDB;User ID=admin;Password=semiconductor;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False";
-            services.AddDbContext<AppDBContext>(options =>
+            services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connection));
             services.AddControllersWithViews();
         }
