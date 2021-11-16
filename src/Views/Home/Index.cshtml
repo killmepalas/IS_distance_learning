@@ -1,8 +1,39 @@
-﻿@{
+﻿@model IEnumerable<IS_distance_learning.Models.Course>
+
+@{
     ViewData["Title"] = "Главная страница";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Добро пожаловать в Центр дистанционного обучения</h1>
-    <p>Для ознакомления с курсами и прохождения тестирований необходимо <a asp-controller="Account" asp-action="Login">войти</a> на сайт.</p>
+<h1 class="display-4 text-center">Добро пожаловать в Центр дистанционного обучения</h1>
+<div class="d-flex flex-column align-items-center">
+    @if (User.Identity.IsAuthenticated)
+    {
+        <div class="container d-flex flex-column">
+            <h2 class="mb-3">Учебные курсы</h2>
+            @foreach (var item in Model)
+            {
+                <div class="d-flex justify-content-between mb-3 course">
+                    <h4>@Html.DisplayFor(modelItem => item.Name)</h4>
+                    <div class="d-flex flex-column justify-content-between">
+                        <form method="get" asp-controller="Course" class="align-self-end">
+                            <input name="id" value="@item.Id" type="hidden" />
+                            <input type="submit" asp-action="Details" asp-controller="Course" class="btn-link border-0 bg-light" value="Подробнее" />
+                        </form>
+                        <div>
+                            <span class="mr-2">Ведущий преподаватель:</span>
+                            <span class="mr-2">@Html.DisplayFor(modelItem => item.Account.LastName)</span>
+                            <span class="mr-2">@Html.DisplayFor(modelItem => item.Account.Name)</span>
+                            <span>@Html.DisplayFor(modelItem => item.Account.MiddleName)</span>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="text-center">
+            <p>Для ознакомления с курсами и прохождения тестирований необходимо <a asp-controller="Account" asp-action="Login">войти</a> на сайт.</p>
+        </div>
+    }
 </div>
