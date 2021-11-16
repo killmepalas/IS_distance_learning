@@ -6,9 +6,14 @@
 
 <h1>Курсы</h1>
 
-<div class="col-md-4 mb-2">
-    <a class="btn btn-primary" asp-action="Create">Добавить курс</a>
-</div>
+@if (User.IsInRole("teacher"))
+{
+    <div class="col-md-4 mb-2">
+        <form method="get">
+            <input type="submit" asp-action="Create" class="btn btn-primary" value="Добавить курс" />
+        </form>
+    </div>
+}
 <table border="1" bordercolor="#dee2e6" class="table">
     <thead>
         <tr>
@@ -44,7 +49,10 @@
             @if (item.Account.Login == User.Identity.Name)
             {
                 <td>
-                    <a class="btn btn-info" asp-action="Update" asp-route-id="@item.Id">Редактировать</a>
+                    <form method="get">
+                        <input name="id" class="hide disabled invisible" type="hidden" value="@item.Id" />
+                        <input type="submit"  asp-action="Update" asp-route-id="@item.Id" asp-controller="Course" class="btn btn-info" value="Редактировать"/>
+                    </form>
                 </td>
                 <td>
                     <form method="get">

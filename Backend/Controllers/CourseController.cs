@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using IS_distance_learning.Models;
+using IS_distance_learning.ViewModels;
 using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace IS_distance_learning.Controllers
 {
@@ -18,29 +20,22 @@ namespace IS_distance_learning.Controllers
         {
             _context = context;
         }
-        
-        // TODO: refactor this garbage
+
         [HttpGet]
         [Authorize(Roles = "teacher,admin")]
-        public async Task<IActionResult> Index(int? id)
+        public async Task<IActionResult> Index()
         {
             List<Course> courses;
-            if (id == null)
+            if (User.IsInRole("admin"))
             {
-                if (User.IsInRole("admin"))
-                {
-                    courses = await _context.Courses.Include(x => x.Account).ToListAsync();
-                }
-                else
-                {
-                    return RedirectToAction("Error", "Home");
-                }
+                courses = await _context.Courses.Include(c => c.Account).ToListAsync();
             }
             else
             {
-                courses = await _context.Courses.Include(x => x.Account).Where(x => x.AccountId == id).ToListAsync();
+
+                courses = await _context.Courses.Include(c => c.Account).Where(c => c.AccountId == int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier))).ToListAsync();
             }
-            
+
             return View(courses);
         }
 
@@ -50,7 +45,7 @@ namespace IS_distance_learning.Controllers
         {
             return View();
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "teacher")]
@@ -60,9 +55,9 @@ namespace IS_distance_learning.Controllers
             {
                 await _context.AddAsync(course);
                 await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("Index", "Course");
             }
-            
+
             return View(course);
         }
 
@@ -75,10 +70,10 @@ namespace IS_distance_learning.Controllers
             {
                 return NotFound();
             }
-            
+
             return View(course);
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "teacher")]
@@ -109,9 +104,8 @@ namespace IS_distance_learning.Controllers
                 }
 
                 return RedirectToAction("Index", "Course");
-                ;
             }
-            
+
             return View(course);
         }
 
@@ -130,14 +124,14 @@ namespace IS_distance_learning.Controllers
             foreach (var g in groups)
             {
                 SelectListItem selListItem = new SelectListItem()
-                    {Value = g.Id.ToString(), Text = g.Name + "  " + g.Code};
+                { Value = g.Id.ToString(), Text = g.Name + "  " + g.Code };
                 itemList.Add(selListItem);
             }
 
             ViewBag.Groups = itemList;
             return View(course);
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "teacher")]
@@ -154,7 +148,7 @@ namespace IS_distance_learning.Controllers
             {
                 return NotFound();
             }
-            
+
             if (ModelState.IsValid)
             {
                 try
@@ -184,7 +178,7 @@ namespace IS_distance_learning.Controllers
 
                 return RedirectToAction("Index", "Course");
             }
-            
+
             return View(course);
         }
 
@@ -203,14 +197,14 @@ namespace IS_distance_learning.Controllers
             foreach (var g in groups)
             {
                 SelectListItem selListItem = new SelectListItem()
-                    {Value = g.Id.ToString(), Text = g.Name + "  " + g.Code};
+                { Value = g.Id.ToString(), Text = g.Name + "  " + g.Code };
                 itemList.Add(selListItem);
             }
 
             ViewBag.Groups = itemList;
             return View(course);
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "teacher")]
@@ -227,7 +221,7 @@ namespace IS_distance_learning.Controllers
             {
                 return NotFound();
             }
-            
+
             if (ModelState.IsValid)
             {
                 try
@@ -256,14 +250,13 @@ namespace IS_distance_learning.Controllers
                 }
 
                 return RedirectToAction("Index", "Course");
-                ;
             }
 
             return View(course);
         }
 
         [HttpPost]
-        [Authorize(Roles = "teacher,admin")]
+        [Authorize(Roles = "teacher, admin")]
         public async Task<IActionResult> Delete(int id)
         {
             var course = await _context.Courses.FindAsync(id);
@@ -276,6 +269,28 @@ namespace IS_distance_learning.Controllers
             else
             {
                 return NotFound();
+            }
+        }
+
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Details(int id)
+        {
+            var course = await _context.Courses.Include(c => c.Groups).Include(c => c.Account).FirstOrDefaultAsync(c => c.Id == id);
+            if (User.IsInRole("admin"))
+            {
+                var details = new CourseDetailsModel { Name = course.Name, Account = course.Account, Groups = course.Groups };
+                return View(details);
+            }
+            else if (User.IsInRole("teacher"))
+            {
+                var details = new CourseDetailsModel { Name = course.Name, Account = course.Account, Groups = course.Groups };
+                return View(details);
+            }
+            else
+            {
+                var details = new CourseDetailsModel { Name = course.Name, Account = course.Account };
+                return View(details);
             }
         }
 
