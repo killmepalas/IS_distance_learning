@@ -18,20 +18,31 @@
         <tr>
             <th>Название группы</th>
             <th>Код группы</th>
-            @User.IsInRole("teacher") ? <th>Открепить группу</th>
+            <th>
+                @if (User.IsInRole("teacher"))
+                {
+                    <string>Открепить группу</string>
+                }
+                else
+                {
+                    <string></string>
+                }
+            </th>
         </tr>
-        @foreach (Group g in Model.Groups)
-        {
-            <tr>
-                <td>@g.Name</td>
-                <td>@g.Code</td>
-                <td>
-                    <form method="get">
-                        <input name="id" class="hide disabled invisible" type="hidden" value="@g.Id" />
-                        <input type="submit" asp-action="Update" asp-controller="Group" class="btn btn-info" value="Редактировать" />
-                    </form>
-                </td>
-            </tr>
+        @if(User.IsInRole("admin") || User.IsInRole("teacher")) {
+            @foreach (Group g in Model.Groups)
+            {
+                <tr>
+                    <td>@g.Name</td>
+                    <td>@g.Code</td>
+                    <td>
+                        <form method="get">
+                            <input name="id" class="hide disabled invisible" type="hidden" value="@g.Id" />
+                            <input type="submit" asp-action="Update" asp-controller="Group" class="btn btn-info" value="Редактировать" />
+                        </form>
+                    </td>
+                </tr>
+            }
         }
     </table>
 </div>
