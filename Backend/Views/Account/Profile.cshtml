@@ -44,15 +44,15 @@
         <div class="col-md-6">
             <a class="btn btn-primary mb-2" asp-controller="Account" asp-action="Index">Работа с пользователями</a>
             <a class="btn btn-primary mb-2" asp-controller="Group" asp-action="Index">Работа с учебными группами</a>
-            @*<form method="get">
-                <input value="0" type="hidden"/>*@
-                <a class="btn btn-primary" asp-controller="Course" asp-action="Index">Работа с Курсами</a>
-            @*</form>*@
+            <a class="btn btn-primary" asp-controller="Course" asp-action="Index">Работа с Курсами</a>
         </div>
         } else if (Model.RoleId == 2)
         { 
         <div class="col-md-6">
-            <a class="btn btn-primary" asp-controller="Course" asp-action="Index">Работа с Курсами</a>
+            <form method="get" asp-action="Index">
+                <input name="id" type="hidden" value="@Model.Id" />
+                <button type="submit" class="btn btn-primary" asp-controller="Course" asp-action="Index">Работа с Курсами</button>
+            </form>
         </div>
          }
     }

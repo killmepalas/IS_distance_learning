@@ -34,7 +34,10 @@
 </div>
 
 <div>
-    <a asp-action="Index">Вернуться к списку курсов</a>
+    <form method="get" asp-action="Index">
+        <input name="id" type="hidden" value="@Model.Id" />
+        <a asp-action="Index">Вернуться к списку курсов</a>
+    </form>
 </div>
 
 @section Scripts {
