@@ -8,9 +8,9 @@ namespace IS_distance_learning.Controllers
 {
     public class GroupController : Controller
     {
-        private readonly AppDBContext _context;
+        private readonly AppDbContext _context;
 
-        public GroupController(AppDBContext context)
+        public GroupController(AppDbContext context)
         {
             _context = context;
         }

@@ -11,18 +11,13 @@ namespace IS_distance_learning.Models
     {
         [Key]
         public int Id { get; set; }
-        
         [Required]
         public string Name { get; set; }
-        
+        public string Description { get; set; }
         [Required]
         public DateTime Date { get; set; }
-        
-        [Required]
         public DateTime ExpirationDate { get; set; }
-
-        public List<Question> Questions { get; set; } = new List<Question>();
-
+        
         public int CourseId { get; set; }
         public Course Course { get; set; }
     }

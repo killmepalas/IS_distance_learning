@@ -14,8 +14,8 @@ namespace IS_distance_learning.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly AppDBContext _context;
-        public AccountController(AppDBContext context)
+        private readonly AppDbContext _context;
+        public AccountController(AppDbContext context)
         {
             _context = context;
         }
