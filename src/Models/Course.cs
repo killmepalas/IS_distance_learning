@@ -12,13 +12,12 @@ namespace IS_distance_learning.Models
     {
         [Key]
         public int Id { get; set; }
-        
         [Required]
-        [MaxLength(50)]
         public string Name { get; set; }
-        
-        public int AccountId { get; set; }
-        public Account Account { get; set; }
+        public string Description { get; set; }
+
+        public int TeacherId { get; set; }
+        public Teacher Teacher { get; set; }
 
         public List<Group> Groups { get; set; } = new List<Group>();
     }

@@ -5,19 +5,23 @@ using System.Threading.Tasks;
 using IS_distance_learning.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace IS_distance_learning
+namespace IS_distance_learning.Models
 {
-    public class AppDBContext : DbContext
+    public class AppDbContext : DbContext
     {
         public DbSet<Account> Accounts { get; set; }
+        public DbSet<Admin> Admins { get; set; }
+        public DbSet<Teacher> Teachers { get; set; }
+        public DbSet<Student> Students { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<Group> Groups { get; set; }
         public DbSet<Course> Courses { get; set; }
         public DbSet<Test> Tests { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }
-        public DbSet<Group> Groups { get; set; }
+        public DbSet<AnswerStudent> AnswerStudent { get; set; }
 
-        public AppDBContext(DbContextOptions<AppDBContext> options) : base(options) { }
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -37,15 +41,13 @@ namespace IS_distance_learning
                 Name = "admin",
                 MiddleName = "admin",
                 LastName = "admin",
-                RoleId = 1,
-                GroupId = null
+                RoleId = 1
             });
-
-            modelBuilder.Entity<Answer>()
-                .HasOne<Question>(x => x.Question)
-                .WithMany(x => x.Answers)
-                .HasForeignKey(x => x.QuestionId)
-                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Admin>().HasData(new Admin
+            {
+                Id = 1,
+                AccountId = 1
+            });
         }
     }
 }

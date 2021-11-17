@@ -9,17 +9,18 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using System.Linq;
+using System;
 
 namespace IS_distance_learning.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly AppDBContext _context;
-        public AccountController(AppDBContext context)
+        private readonly AppDbContext _context;
+        public AccountController(AppDbContext context)
         {
             _context = context;
         }
-        
+
         [HttpGet]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Register()
@@ -27,7 +28,7 @@ namespace IS_distance_learning.Controllers
             ViewBag.Groups = await _context.Groups.ToListAsync();
             return View();
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "admin")]
@@ -36,15 +37,54 @@ namespace IS_distance_learning.Controllers
             if (ModelState.IsValid)
             {
                 Account account = await _context.Accounts.FirstOrDefaultAsync(u => u.Login == model.Login);
+
                 if (account == null)
                 {
-                    account = new Account { Login = model.Login, Password = model.Password, Name = model.Name, LastName = model.LastName, MiddleName = model.MiddleName, RoleId = model.RoleId, GroupId = model.GroupId};
-
-                    var role = await _context.Roles.FindAsync(model.RoleId);
-                    account.Role = role;
-
-                    await _context.Accounts.AddAsync(account);
-                    await _context.SaveChangesAsync();
+                    if (model.RoleId == 1)
+                    {
+                        account = new Account 
+                        { 
+                            Login = model.Login, 
+                            Password = model.Password,
+                            Name = model.Name,
+                            LastName = model.LastName,
+                            MiddleName = model.MiddleName,
+                            RoleId = model.RoleId 
+                        };                        
+                        await _context.Accounts.AddAsync(account);
+                        await _context.Admins.AddAsync(new Admin { Account = account });
+                        await _context.SaveChangesAsync();
+                    }
+                    else if (model.RoleId == 2)
+                    {
+                        account = new Account 
+                        { 
+                            Login = model.Login,
+                            Password = model.Password,
+                            Name = model.Name,
+                            LastName = model.LastName,
+                            MiddleName = model.MiddleName, 
+                            RoleId = model.RoleId 
+                        };
+                        await _context.Accounts.AddAsync(account);
+                        await _context.Teachers.AddAsync(new Teacher { Account = account });
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        account = new Account 
+                        {
+                            Login = model.Login,
+                            Password = model.Password,
+                            Name = model.Name, 
+                            LastName = model.LastName,
+                            MiddleName = model.MiddleName,
+                            RoleId = model.RoleId 
+                        };
+                        await _context.Accounts.AddAsync(account);
+                        await _context.Students.AddAsync(new Student { GroupId = model.GroupId, Account = account });
+                        await _context.SaveChangesAsync();
+                    }
 
                     return RedirectToAction("Index", "Account");
                 }
@@ -53,13 +93,13 @@ namespace IS_distance_learning.Controllers
             }
             return View(model);
         }
-        
+
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginModel model)
@@ -67,7 +107,8 @@ namespace IS_distance_learning.Controllers
             if (ModelState.IsValid)
             {
                 Account account = await _context.Accounts
-                    .Include(r => r.Role).FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
+                    .Include(r => r.Role)
+                    .FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
                 if (account != null)
                 {
                     await Authenticate(account); // аутентификация
@@ -76,9 +117,10 @@ namespace IS_distance_learning.Controllers
                 }
                 ModelState.AddModelError("", "Некорректные логин и(или) пароль");
             }
+
             return View(model);
         }
-        
+
         private async Task Authenticate(Account account)
         {
             // создаем один claim
@@ -89,7 +131,7 @@ namespace IS_distance_learning.Controllers
                 new Claim(ClaimTypes.NameIdentifier, account.Id.ToString())
             };
             // создаем объект ClaimsIdentity
-            ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType,
+            ClaimsIdentity id = new(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType,
                 ClaimsIdentity.DefaultRoleClaimType);
             // установка аутентификационных куки
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
@@ -108,8 +150,23 @@ namespace IS_distance_learning.Controllers
         public async Task<IActionResult> Profile()
         {
             var accountId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var account = await _context.Accounts.Include(g => g.Group).Include(r => r.Role).FirstOrDefaultAsync(x => x.Id == accountId);
-            return View(account);
+            Account account;
+            if (User.IsInRole("student"))
+            {
+                account = await _context.Accounts
+                    .Include(a => a.Student.Group)
+                    .Include(a => a.Role)
+                    .FirstOrDefaultAsync(a => a.Id == accountId);
+                return View(account);
+                
+            }
+            else
+            {
+                account = await _context.Accounts
+                    .Include(a => a.Role)
+                    .FirstOrDefaultAsync(a => a.Id == accountId);
+                return View(account);
+            }
         }
 
         [HttpGet]
@@ -118,28 +175,49 @@ namespace IS_distance_learning.Controllers
         {
             ViewBag.Groups = await _context.Groups.ToListAsync();
             ViewBag.Roles = await _context.Roles.ToListAsync();
+            List<Account> accounts = new ();
             if (roleId == 0)
             {
-                var selectedAccounts = new AccountModel { SelectedAccounts = await _context.Accounts.Include(g => g.Group).ToListAsync() };
+                accounts = await _context.Accounts
+                    .Include(a => a.Teacher)
+                    .Include(a => a.Admin)
+                    .Include(a => a.Role)
+                    .Include(a => a.Student)
+                    .ThenInclude(s => s.Group)
+                    .ToListAsync();
+                var selectedAccounts = new SelectedAccountsModel { SelectedAccounts = accounts };
                 return View(selectedAccounts);
             }
             else if (groupId == 0)
             {
-                var selectedAccounts = new AccountModel { SelectedAccounts = await _context.Accounts.Include(g => g.Group).Where(acc => acc.RoleId == roleId).ToListAsync() };
+                accounts = await _context.Accounts
+                    .Where(a => a.RoleId == roleId)
+                    .Include(a => a.Admin)
+                    .Include(a => a.Role)
+                    .Include(a => a.Teacher)
+                    .Include(a => a.Student)
+                    .ThenInclude(s => s.Group)
+                    .ToListAsync();
+                var selectedAccounts = new SelectedAccountsModel { SelectedAccounts = accounts };
                 return View(selectedAccounts);
             }
             else
             {
-                var selectedAccounts = new AccountModel { SelectedAccounts = await _context.Accounts.Include(g => g.Group).Where(acc => acc.RoleId == roleId && acc.GroupId == groupId).ToListAsync() };
+                accounts = await _context.Accounts
+                    .Include(a => a.Student)
+                    .Where(a => a.Student.GroupId == groupId)
+                    .ToListAsync();
+                var selectedAccounts = new SelectedAccountsModel { SelectedAccounts = accounts };
                 return View(selectedAccounts);
             }
         }
-        
+
         [HttpGet]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Update(int id)
         {
             ViewBag.Groups = await _context.Groups.ToListAsync();
+
             var account = await _context.Accounts.FindAsync(id);
             if (account == null)
             {
@@ -152,7 +230,7 @@ namespace IS_distance_learning.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> Update(int id, Account model)
+        public async Task<IActionResult> Update(int id, int GroupId, Account model)
         {
             var account = await _context.Accounts.FindAsync(id);
             if (account == null)
@@ -160,15 +238,53 @@ namespace IS_distance_learning.Controllers
                 return NotFound();
             }
 
-            account.Login = model.Login;
-            account.Password = model.Password;
-            account.Name = model.Name;
-            account.LastName = model.LastName;
-            account.MiddleName = model.MiddleName;
-            account.RoleId = model.RoleId;
-            account.GroupId = model.GroupId;
-            _context.Accounts.Update(account);
-            await _context.SaveChangesAsync();
+             _context.Accounts.Remove(account);
+
+            if (model.RoleId == 1)
+            {
+                account = new Account
+                {
+                    Login = model.Login,
+                    Password = model.Password,
+                    Name = model.Name,
+                    LastName = model.LastName,
+                    MiddleName = model.MiddleName,
+                    RoleId = model.RoleId
+                };
+                await _context.Accounts.AddAsync(account);
+                await _context.Admins.AddAsync(new Admin { Account = account });
+                await _context.SaveChangesAsync();
+            }
+            else if (model.RoleId == 2)
+            {
+                account = new Account
+                {
+                    Login = model.Login,
+                    Password = model.Password,
+                    Name = model.Name,
+                    LastName = model.LastName,
+                    MiddleName = model.MiddleName,
+                    RoleId = model.RoleId
+                };
+                await _context.Accounts.AddAsync(account);
+                await _context.Teachers.AddAsync(new Teacher { Account = account });
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                account = new Account
+                {
+                    Login = model.Login,
+                    Password = model.Password,
+                    Name = model.Name,
+                    LastName = model.LastName,
+                    MiddleName = model.MiddleName,
+                    RoleId = model.RoleId
+                };
+                await _context.Accounts.AddAsync(account);
+                await _context.Students.AddAsync(new Student { GroupId = GroupId, Account = account });
+                await _context.SaveChangesAsync();
+            }
             return RedirectToAction("Index", "Account", new { RoleId = 0, GroupId = 0 });
         }
 
@@ -176,17 +292,10 @@ namespace IS_distance_learning.Controllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var account = await _context.Accounts.FindAsync(id);
-            if (account != null)
-            {
-                _context.Accounts.Remove(account);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index", "Account");
-            }
-            else
-            {
-                return NotFound();
-            }
+            Account account = await _context.Accounts.FindAsync(id);
+            _context.Accounts.Remove(account);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index", "Account");
         }
     }
 }

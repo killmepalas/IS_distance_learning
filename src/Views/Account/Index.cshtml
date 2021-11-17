@@ -1,4 +1,4 @@
-﻿@model IS_distance_learning.ViewModels.AccountModel
+﻿@model IS_distance_learning.ViewModels.SelectedAccountsModel
 
 @{
     ViewData["Title"] = "Аккаунты";
@@ -44,14 +44,14 @@
         <th>Редактировать</th>
         <th>Удалить</th>
     </tr>
-    @foreach (Account acc in Model.SelectedAccounts)
+    @foreach (var acc in Model.SelectedAccounts)
     {
         <tr>
             <td>@acc.LastName</td>
             <td>@acc.Name</td>
             <td>@acc.MiddleName</td>
             <td>@acc.Role.Name</td>
-            <td>@acc.Group?.Name</td>
+            <td>@acc.Student?.Group?.Name</td>
             <td>
                 <form method="get">
                     <input name="id" class="hide disabled invisible" type="hidden" value="@acc.Id" />

@@ -1,0 +1,49 @@
+﻿@model IS_distance_learning.ViewModels.CourseDetailsModel
+
+@{
+    ViewData["Title"] = "Подробнее";
+}
+
+<div class="d-flex flex-column align-items-center">
+    <div class="d-flex justify-content-between mb-3 course">
+        <h4>@Html.DisplayFor(model => model.Name)</h4>
+        <div class="align-self-end">
+            <span class="mr-2">Ведущий преподаватель:</span>
+            <span class="mr-2">@Html.DisplayFor(model => model.Teacher.Account.LastName)</span>
+            <span class="mr-2">@Html.DisplayFor(model => model.Teacher.Account.Name)</span>
+            <span>@Html.DisplayFor(model => model.Teacher.Account.MiddleName)</span>
+        </div>
+    </div>
+    <table border="1" bordercolor="#dee2e6" class="table">
+        <tr>
+        <tr>
+            <th>Название группы</th>
+            <th>Код группы</th>
+            <th>
+                @if (User.IsInRole("teacher"))
+                {
+                    <string>Открепить группу</string>
+                }
+                else
+                {
+                    <string></string>
+                }
+            </th>
+        </tr>
+        @if(User.IsInRole("admin") || User.IsInRole("teacher")) {
+            @foreach (Group g in Model.Groups)
+            {
+                <tr>
+                    <td>@g.Name</td>
+                    <td>@g.Code</td>
+                    <td>
+                        <form method="get">
+                            <input name="id" class="hide disabled invisible" type="hidden" value="@g.Id" />
+                            <input type="submit" asp-action="Update" asp-controller="Group" class="btn btn-info" value="Редактировать" />
+                        </form>
+                    </td>
+                </tr>
+            }
+        }
+    </table>
+</div>

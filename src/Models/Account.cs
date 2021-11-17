@@ -10,31 +10,27 @@ namespace IS_distance_learning.Models
     {
         [Key]
         public int Id { get; set; }
-        
+
         [Required]
-        [MaxLength(10)]
         public string Login { get; set; }
-        
+
         [Required]
-        [MaxLength(16)]
         public string Password { get; set; }
-        
+
         [Required]
-        [MaxLength(30)]
         public string Name { get; set; }
-        
+
         [Required]
-        [MaxLength(30)]
         public string MiddleName { get; set; }
-        
+
         [Required]
-        [MaxLength(30)]
         public string LastName { get; set; }
-        
+
         public int RoleId { get; set; }
         public Role Role { get; set; }
-        
-        public int? GroupId { get; set; }
-        public Group Group { get; set; }
+
+        public Admin Admin { get; set; }
+        public Teacher Teacher { get; set; }
+        public Student Student { get; set; }
     }
 }

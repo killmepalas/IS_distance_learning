@@ -19,7 +19,7 @@
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input asp-for="AccountId" name="AccountId" value="@User.Claims.ToList()[2].Value"  type="hidden" class="form-control" />
+                <input name="AccountId" value="@User.Claims.ToList()[2].Value"  type="hidden" class="form-control" />
             </div>
             <div class="form-group">
                 <input type="submit" value="Сохранить" class="btn btn-primary" />
