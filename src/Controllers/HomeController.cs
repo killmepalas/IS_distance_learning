@@ -36,6 +36,7 @@ namespace IS_distance_learning.Controllers
                 {
                     courses = await _context.Courses
                         .Include(c => c.Teacher)
+                        .ThenInclude(t => t.Account)
                         .ToListAsync();
                 }
                 else if (User.IsInRole("teacher"))
@@ -43,6 +44,7 @@ namespace IS_distance_learning.Controllers
 
                     courses = await _context.Courses
                         .Include(c => c.Teacher)
+                        .ThenInclude(t => t.Account)
                         .Where(c => c.TeacherId == account.Teacher.Id)
                         .ToListAsync();
                 }
