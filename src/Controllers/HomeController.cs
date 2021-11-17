@@ -4,23 +4,62 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using IS_distance_learning.Models;
+using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace IS_distance_learning.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly AppDbContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(AppDbContext context)
         {
-            _logger = logger;
+            _context = context;
         }
 
-        public IActionResult Index()
+        [HttpGet]
+        public async Task<IActionResult> Index()
         {
-            return View();
+            Account account = await _context.Accounts
+                .Include(a => a.Teacher)
+                .Include(a => a.Student)
+                .ThenInclude(s => s.Group)
+                .ThenInclude(g => g.Courses)
+                .ThenInclude(c => c.Teacher)
+                .FirstOrDefaultAsync(a => a.Id == int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+            List<Course> courses = new();
+            if (User.Identity.IsAuthenticated)
+            {
+                if (User.IsInRole("admin"))
+                {
+                    courses = await _context.Courses
+                        .Include(c => c.Teacher)
+                        .ThenInclude(t => t.Account)
+                        .ToListAsync();
+                }
+                else if (User.IsInRole("teacher"))
+                {
+
+                    courses = await _context.Courses
+                        .Include(c => c.Teacher)
+                        .ThenInclude(t => t.Account)
+                        .Where(c => c.TeacherId == account.Teacher.Id)
+                        .ToListAsync();
+                }
+                else
+                {
+                    courses = await _context.Courses
+                        .Include(c => c.Teacher)
+                        .ThenInclude(t => t.Account)
+                        .Include(c => c.Groups)
+                        .Where(c => c.Groups.Contains(account.Student.Group))
+                        .ToListAsync();
+                }
+            }
+
+            return View(courses);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

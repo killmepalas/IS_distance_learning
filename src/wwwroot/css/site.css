@@ -69,3 +69,21 @@ body {
   white-space: nowrap;
   line-height: 60px; /* Vertically center the text there */
 }
+
+.course {
+    height: 100px;
+    padding: 16px;
+    transition: 0.2s;
+    border-radius: 4px;
+    background-color: #fcfcfccb;
+    -webkit-box-shadow: 0px 5px 10px 2px rgba(34, 60, 80, 0.2);
+    -moz-box-shadow: 0px 5px 10px 2px rgba(34, 60, 80, 0.2);
+    box-shadow: 0px 5px 10px 2px rgba(34, 60, 80, 0.2);
+}
+
+.course:hover, .course:active, .course:focus {
+    border-radius: 4px;
+    -webkit-box-shadow: 2px 5px 20px 2px rgba(34, 60, 80, 0.3);
+    -moz-box-shadow: 2px 5px 20px 2px rgba(34, 60, 80, 0.3);
+    box-shadow: 2px 5px 20px 2px rgba(34, 60, 80, 0.3);
+}

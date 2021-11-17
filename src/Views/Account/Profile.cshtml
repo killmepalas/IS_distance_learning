@@ -1,11 +1,5 @@
 ﻿@model IS_distance_learning.Models.Account
-@{ 
-    var parms = new Dictionary<string, string>
-            {
-                { "RoleId", "0" },
-                { "GroupId", "0" }
-            };
-}
+
 @{
     ViewData["Title"] = User.Identity.Name;
 }
@@ -32,7 +26,7 @@
                 {
                     <div class="d-flex col-md-8">
                         <h6 class="mr-2">Группа:</h6>
-                        <h6>@Model?.Group.Name</h6>
+                        <h6>@Model?.Student?.Group.Name</h6>
                     </div>
                 }
             }
@@ -42,13 +36,17 @@
         if (Model.RoleId == 1)
         { 
         <div class="col-md-6">
-            <a class="btn btn-primary mb-2" asp-controller="Account" asp-all-route-data="parms" asp-action="Index">Работа с пользователями</a>
+            <a class="btn btn-primary mb-2" asp-controller="Account" asp-action="Index">Работа с пользователями</a>
             <a class="btn btn-primary mb-2" asp-controller="Group" asp-action="Index">Работа с учебными группами</a>
+            <a class="btn btn-primary" asp-controller="Course" asp-action="Index">Работа с Курсами</a>
         </div>
         } else if (Model.RoleId == 2)
         { 
         <div class="col-md-6">
-            <a class="btn btn-primary" asp-controller="Course" asp-action="Index">Работа с Курсами</a>
+            <form method="get" asp-action="Index">
+                <input name="id" type="hidden" value="@Model.Id" />
+                <button type="submit" class="btn btn-primary" asp-controller="Course" asp-action="Index">Работа с Курсами</button>
+            </form>
         </div>
          }
     }

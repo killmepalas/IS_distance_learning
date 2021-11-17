@@ -14,12 +14,12 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <input asp-for="Name" value="@Model.Name" type="hidden" />
-            <input asp-for="AccountId" type="hidden" value="@Model.AccountId" />
+            <input asp-for="TeacherId" type="hidden" value="@Model.TeacherId" />
             @if (ViewBag.Groups.Count != 0)
             {
                 <div class="form-group">
                     <label for="SelectedGroups" class="control-label">Выберите группы для прикрепления к курсу</label>
-                    <select class="form-control overflow-auto custom-select" name="SelectedGroups" asp-items="@ViewBag.Groups" multiple>
+                    <select class="form-control overflow-auto w-100 custom-select" name="SelectedGroups" asp-items="@ViewBag.Groups" multiple>
                     </select>
                 </div>
                 <div class="form-group">
@@ -34,7 +34,10 @@
 </div>
 
 <div>
-    <a asp-action="Index">Вернуться к списку курсов</a>
+    <form method="get" asp-action="Index">
+        <input name="id" type="hidden" value="@Model.Id" />
+        <a asp-action="Index">Вернуться к списку курсов</a>
+    </form>
 </div>
 
 @section Scripts {
