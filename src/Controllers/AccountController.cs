@@ -107,7 +107,7 @@ namespace IS_distance_learning.Controllers
             if (ModelState.IsValid)
             {
                 Account account = await _context.Accounts
-                    .Include(r => r.Role)
+                    .Include(a => a.Role)
                     .FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
                 if (account != null)
                 {
@@ -230,7 +230,7 @@ namespace IS_distance_learning.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> Update(int id, int GroupId, Account model)
+        public async Task<IActionResult> Update(int id, int? GroupId, Account model)
         {
             var account = await _context.Accounts.FindAsync(id);
             if (account == null)
