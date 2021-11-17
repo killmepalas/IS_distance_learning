@@ -26,14 +26,14 @@ namespace IS_distance_learning.Controllers
         public async Task<IActionResult> Index()
         {
             List<Course> courses;
+            Account account = await _context.Accounts.Include(a => a.Teacher).FirstOrDefaultAsync(a => a.Id == int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)));
             if (User.IsInRole("admin"))
             {
-                courses = await _context.Courses.Include(c => c.Account).ToListAsync();
+                courses = await _context.Courses.Include(c => c.Teacher).ThenInclude(t => t.Account).ToListAsync();
             }
             else
             {
-
-                courses = await _context.Courses.Include(c => c.Account).Where(c => c.AccountId == int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier))).ToListAsync();
+                courses = await _context.Courses.Include(c => c.Teacher).ThenInclude(t => t.Account).Where(c => c.TeacherId == account.Teacher.Id).ToListAsync();
             }
 
             return View(courses);
@@ -49,10 +49,12 @@ namespace IS_distance_learning.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "teacher")]
-        public async Task<IActionResult> Create([Bind("Id,Name,AccountId")] Course course)
+        public async Task<IActionResult> Create(Course course, int AccountId)
         {
             if (ModelState.IsValid)
             {
+                var account = await _context.Accounts.Include(a => a.Teacher).FirstOrDefaultAsync(a => a.Id == AccountId);
+                course.TeacherId = account.Teacher.Id;
                 await _context.AddAsync(course);
                 await _context.SaveChangesAsync();
                 return RedirectToAction("Index", "Course");
@@ -77,7 +79,7 @@ namespace IS_distance_learning.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "teacher")]
-        public async Task<IActionResult> Update(int id, [Bind("Id,Name,AccountId")] Course course)
+        public async Task<IActionResult> Update(int id, Course course, int AccountId)
         {
             if (id != course.Id)
             {
@@ -88,6 +90,8 @@ namespace IS_distance_learning.Controllers
             {
                 try
                 {
+                    var account = await _context.Accounts.Include(a => a.Teacher).FirstOrDefaultAsync(a => a.Id == AccountId);
+                    course.TeacherId = account.Teacher.Id;
                     _context.Courses.Update(course);
                     await _context.SaveChangesAsync();
                 }
@@ -120,11 +124,10 @@ namespace IS_distance_learning.Controllers
             }
 
             var groups = await _context.Groups.Where(gr => !gr.Courses.Contains(course)).ToListAsync();
-            List<SelectListItem> itemList = new List<SelectListItem> { };
+            List<SelectListItem> itemList = new ();
             foreach (var g in groups)
             {
-                SelectListItem selListItem = new SelectListItem()
-                { Value = g.Id.ToString(), Text = g.Name + "  " + g.Code };
+                SelectListItem selListItem = new () { Value = g.Id.ToString(), Text = g.Name + "  " + g.Code };
                 itemList.Add(selListItem);
             }
 
@@ -135,8 +138,7 @@ namespace IS_distance_learning.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "teacher")]
-        public async Task<IActionResult> AddGroups(int id, [Bind("Id,Name,AccountId")] Course model,
-            int[] selectedGroups)
+        public async Task<IActionResult> AddGroups(int id, [Bind("Id,Name,AccountId")] Course model, int[] selectedGroups)
         {
             if (id != model.Id)
             {
@@ -193,11 +195,10 @@ namespace IS_distance_learning.Controllers
             }
 
             var groups = await _context.Groups.Where(gr => gr.Courses.Contains(course)).ToListAsync();
-            List<SelectListItem> itemList = new List<SelectListItem> { };
+            List<SelectListItem> itemList = new ();
             foreach (var g in groups)
             {
-                SelectListItem selListItem = new SelectListItem()
-                { Value = g.Id.ToString(), Text = g.Name + "  " + g.Code };
+                SelectListItem selListItem = new () { Value = g.Id.ToString(), Text = g.Name + "  " + g.Code };
                 itemList.Add(selListItem);
             }
 
@@ -276,20 +277,20 @@ namespace IS_distance_learning.Controllers
         [Authorize]
         public async Task<IActionResult> Details(int id)
         {
-            var course = await _context.Courses.Include(c => c.Groups).Include(c => c.Account).FirstOrDefaultAsync(c => c.Id == id);
+            var course = await _context.Courses.Include(c => c.Groups).Include(c => c.Teacher).ThenInclude(t => t.Account).FirstOrDefaultAsync(c => c.Id == id);
             if (User.IsInRole("admin"))
             {
-                var details = new CourseDetailsModel { Name = course.Name, Account = course.Account, Groups = course.Groups };
+                var details = new CourseDetailsModel { Name = course.Name, Teacher = course.Teacher, Groups = course.Groups };
                 return View(details);
             }
             else if (User.IsInRole("teacher"))
             {
-                var details = new CourseDetailsModel { Name = course.Name, Account = course.Account, Groups = course.Groups };
+                var details = new CourseDetailsModel { Name = course.Name, Teacher = course.Teacher, Groups = course.Groups };
                 return View(details);
             }
             else
             {
-                var details = new CourseDetailsModel { Name = course.Name, Account = course.Account };
+                var details = new CourseDetailsModel { Name = course.Name, Teacher = course.Teacher };
                 return View(details);
             }
         }

@@ -11,7 +11,7 @@ namespace IS_distance_learning.ViewModels
     public class CourseDetailsModel
     {
         public string Name { get; set; }
-        public Account Account { get; set; }
+        public Teacher Teacher { get; set; }
         public List<Group> Groups { get; set; }
     }
 }

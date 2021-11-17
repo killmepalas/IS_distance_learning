@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using System.Linq;
+using System;
 
 namespace IS_distance_learning.Controllers
 {
@@ -19,7 +20,7 @@ namespace IS_distance_learning.Controllers
         {
             _context = context;
         }
-        
+
         [HttpGet]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Register()
@@ -27,7 +28,7 @@ namespace IS_distance_learning.Controllers
             ViewBag.Groups = await _context.Groups.ToListAsync();
             return View();
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "admin")]
@@ -35,32 +36,56 @@ namespace IS_distance_learning.Controllers
         {
             if (ModelState.IsValid)
             {
-                List<Account> accounts = new List<Account>();
-                List<Account> teachers = await _context.Teachers.ToListAsync();
-                List<Account> admins = await _context.Admins.ToListAsync();
-                List<Account> students = await _context.Students.ToListAsync();
-                accounts.AddRange(teachers);
-                accounts.AddRange(admins);
-                accounts.AddRange(students);
-                Account account = accounts.FirstOrDefault(a => a.Login == model.Login);
+                Account account = await _context.Accounts.FirstOrDefaultAsync(u => u.Login == model.Login);
+
                 if (account == null)
                 {
-                    var role = await _context.Roles.FindAsync(model.RoleId);
-                    account.Role = role;
-                    if(model.RoleId == 1)
+                    if (model.RoleId == 1)
                     {
-                        account = new Admin { Login = model.Login, Password = model.Password, Name = model.Name, LastName = model.LastName, MiddleName = model.MiddleName, RoleId = model.RoleId };
-                        await _context.Admins.AddAsync(account);
-                    } else if (model.RoleId == 2)
-                    {
-                        account = new Teacher { Login = model.Login, Password = model.Password, Name = model.Name, LastName = model.LastName, MiddleName = model.MiddleName, RoleId = model.RoleId };
-                        await _context.Teachers.AddAsync(account);
-                    } else
-                    {
-                        account = new Student { Login = model.Login, Password = model.Password, Name = model.Name, LastName = model.LastName, MiddleName = model.MiddleName, RoleId = model.RoleId, GroupId = model.GroupId };
-                        await _context.Students.AddAsync(account);
+                        account = new Account 
+                        { 
+                            Login = model.Login, 
+                            Password = model.Password,
+                            Name = model.Name,
+                            LastName = model.LastName,
+                            MiddleName = model.MiddleName,
+                            RoleId = model.RoleId 
+                        };                        
+                        await _context.Accounts.AddAsync(account);
+                        await _context.Admins.AddAsync(new Admin { Account = account });
+                        await _context.SaveChangesAsync();
                     }
-                    await _context.SaveChangesAsync();
+                    else if (model.RoleId == 2)
+                    {
+                        account = new Account 
+                        { 
+                            Login = model.Login,
+                            Password = model.Password,
+                            Name = model.Name,
+                            LastName = model.LastName,
+                            MiddleName = model.MiddleName, 
+                            RoleId = model.RoleId 
+                        };
+                        await _context.Accounts.AddAsync(account);
+                        await _context.Teachers.AddAsync(new Teacher { Account = account });
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        account = new Account 
+                        {
+                            Login = model.Login,
+                            Password = model.Password,
+                            Name = model.Name, 
+                            LastName = model.LastName,
+                            MiddleName = model.MiddleName,
+                            RoleId = model.RoleId 
+                        };
+                        await _context.Accounts.AddAsync(account);
+                        await _context.Students.AddAsync(new Student { GroupId = model.GroupId, Account = account });
+                        await _context.SaveChangesAsync();
+                    }
+
                     return RedirectToAction("Index", "Account");
                 }
                 else
@@ -68,27 +93,22 @@ namespace IS_distance_learning.Controllers
             }
             return View(model);
         }
-        
+
         [HttpGet]
         public IActionResult Login()
         {
             return View();
         }
-        
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginModel model)
         {
             if (ModelState.IsValid)
             {
-                List<Account> accounts = new List<Account>();
-                List<Account> teachers = await _context.Teachers.Include(a => a.Role).ToListAsync();
-                List<Account> admins = await _context.Admins.Include(a => a.Role).ToListAsync();
-                List<Account> students = await _context.Students.Include(a => a.Role).ToListAsync();
-                accounts.AddRange(teachers);
-                accounts.AddRange(admins);
-                accounts.AddRange(students);
-                var account = accounts.FirstOrDefault(u => u.Login == model.Login && u.Password == model.Password);
+                Account account = await _context.Accounts
+                    .Include(r => r.Role)
+                    .FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
                 if (account != null)
                 {
                     await Authenticate(account); // аутентификация
@@ -97,9 +117,10 @@ namespace IS_distance_learning.Controllers
                 }
                 ModelState.AddModelError("", "Некорректные логин и(или) пароль");
             }
+
             return View(model);
         }
-        
+
         private async Task Authenticate(Account account)
         {
             // создаем один claim
@@ -110,7 +131,7 @@ namespace IS_distance_learning.Controllers
                 new Claim(ClaimTypes.NameIdentifier, account.Id.ToString())
             };
             // создаем объект ClaimsIdentity
-            ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType,
+            ClaimsIdentity id = new(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType,
                 ClaimsIdentity.DefaultRoleClaimType);
             // установка аутентификационных куки
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
@@ -128,19 +149,22 @@ namespace IS_distance_learning.Controllers
         [Authorize]
         public async Task<IActionResult> Profile()
         {
-            Account account;
             var accountId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            if (User.IsInRole("admin"))
+            Account account;
+            if (User.IsInRole("student"))
             {
-                account = await _context.Admins.Include(a => a.Role).FirstOrDefaultAsync(a => a.Id == accountId);
+                account = await _context.Accounts
+                    .Include(a => a.Student.Group)
+                    .Include(a => a.Role)
+                    .FirstOrDefaultAsync(a => a.Id == accountId);
                 return View(account);
-            } else if(User.IsInRole("teacher"))
+                
+            }
+            else
             {
-                account = await _context.Teachers.Include(a => a.Role).FirstOrDefaultAsync(a => a.Id == accountId);
-                return View(account);
-            } else
-            {
-                account = await _context.Students.Include(a => a.Groups).Include(a => a.Role).FirstOrDefaultAsync(a => a.Id == accountId);
+                account = await _context.Accounts
+                    .Include(a => a.Role)
+                    .FirstOrDefaultAsync(a => a.Id == accountId);
                 return View(account);
             }
         }
@@ -151,50 +175,49 @@ namespace IS_distance_learning.Controllers
         {
             ViewBag.Groups = await _context.Groups.ToListAsync();
             ViewBag.Roles = await _context.Roles.ToListAsync();
-            List<Account> accounts = new List<Account>();
+            List<Account> accounts = new ();
             if (roleId == 0)
             {
-                List<Account> teachers = await _context.Teachers.Include(a => a.Role).ToListAsync();
-                List<Account> admins = await _context.Admins.Include(a => a.Role).ToListAsync();
-                List<Account> students = await _context.Students.Include(a => a.Groups).Include(a => a.Role).ToListAsync();
-                accounts.AddRange(teachers);
-                accounts.AddRange(admins);
-                accounts.AddRange(students);
-                var selectedAccounts = new AccountModel { SelectedAccounts = accounts };
+                accounts = await _context.Accounts
+                    .Include(a => a.Teacher)
+                    .Include(a => a.Admin)
+                    .Include(a => a.Role)
+                    .Include(a => a.Student)
+                    .ThenInclude(s => s.Group)
+                    .ToListAsync();
+                var selectedAccounts = new SelectedAccountsModel { SelectedAccounts = accounts };
                 return View(selectedAccounts);
             }
             else if (groupId == 0)
             {
-                if (roleId == 1)
-                {
-                    List<Account> admins = await _context.Admins.Include(a => a.Role).ToListAsync();
-                    var selectedAccounts = new AccountModel { SelectedAccounts = admins };
-                    return View(selectedAccounts);
-                } else if (roleId == 2)
-                {
-                    List<Account> teachers = await _context.Teachers.Include(a => a.Role).ToListAsync();
-                    var selectedAccounts = new AccountModel { SelectedAccounts = teachers };
-                    return View(selectedAccounts);
-                } else
-                {
-                    List<Account> students = await _context.Students.Include(a => a.Groups).Include(a => a.Role).ToListAsync();
-                    var selectedAccounts = new AccountModel { SelectedAccounts = students };
-                    return View(selectedAccounts);
-                }
+                accounts = await _context.Accounts
+                    .Where(a => a.RoleId == roleId)
+                    .Include(a => a.Admin)
+                    .Include(a => a.Role)
+                    .Include(a => a.Teacher)
+                    .Include(a => a.Student)
+                    .ThenInclude(s => s.Group)
+                    .ToListAsync();
+                var selectedAccounts = new SelectedAccountsModel { SelectedAccounts = accounts };
+                return View(selectedAccounts);
             }
             else
             {
-                List<Account> students = await _context.Students.Include(a => a.Groups).Where(a => a.GroupId == groupId).ToListAsync();
-                var selectedAccounts = new AccountModel { SelectedAccounts = students };
+                accounts = await _context.Accounts
+                    .Include(a => a.Student)
+                    .Where(a => a.Student.GroupId == groupId)
+                    .ToListAsync();
+                var selectedAccounts = new SelectedAccountsModel { SelectedAccounts = accounts };
                 return View(selectedAccounts);
             }
         }
-        
+
         [HttpGet]
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Update(int id)
         {
             ViewBag.Groups = await _context.Groups.ToListAsync();
+
             var account = await _context.Accounts.FindAsync(id);
             if (account == null)
             {
@@ -207,82 +230,72 @@ namespace IS_distance_learning.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> Update(int id, int roleId, Account model)
+        public async Task<IActionResult> Update(int id, int GroupId, Account model)
         {
-            Account account;
-            if (roleId == 1)
+            var account = await _context.Accounts.FindAsync(id);
+            if (account == null)
             {
-                account = await _context.Admins.FindAsync(id);
-                await _context.Admins.Remove(account);
-            } else if (roleId == 2)
-            {
-                account = await _context.Teachers.FindAsync(id);
-                 await _context.Teachers.Remove(account);
-            } else
-            {
-                account = await _context.Students.FindAsync(id);
-                await _context.Students.Remove(account);
+                return NotFound();
             }
 
-            if(model.RoleId == 1)
+             _context.Accounts.Remove(account);
+
+            if (model.RoleId == 1)
             {
-                account.Login = model.Login;
-                account.Password = model.Password;
-                account.Name = model.Name;
-                account.LastName = model.LastName;
-                account.MiddleName = model.MiddleName;
-                account.RoleId = model.RoleId;
-                await _context.Admins.AddAsync(account);
-            } else if(model.RoleId == 2)
-            {
-                account.Login = model.Login;
-                account.Password = model.Password;
-                account.Name = model.Name;
-                account.LastName = model.LastName;
-                account.MiddleName = model.MiddleName;
-                account.RoleId = model.RoleId;
-                await _context.Teachers.AddAsync(account);
-            } else
-            {
-                account.Login = model.Login;
-                account.Password = model.Password;
-                account.Name = model.Name;
-                account.LastName = model.LastName;
-                account.MiddleName = model.MiddleName;
-                account.RoleId = model.RoleId;
-                account.GroupId = model.GroupId;
-                await _context.Students.AddAsync(account);
+                account = new Account
+                {
+                    Login = model.Login,
+                    Password = model.Password,
+                    Name = model.Name,
+                    LastName = model.LastName,
+                    MiddleName = model.MiddleName,
+                    RoleId = model.RoleId
+                };
+                await _context.Accounts.AddAsync(account);
+                await _context.Admins.AddAsync(new Admin { Account = account });
+                await _context.SaveChangesAsync();
             }
-            await _context.SaveChangesAsync();
+            else if (model.RoleId == 2)
+            {
+                account = new Account
+                {
+                    Login = model.Login,
+                    Password = model.Password,
+                    Name = model.Name,
+                    LastName = model.LastName,
+                    MiddleName = model.MiddleName,
+                    RoleId = model.RoleId
+                };
+                await _context.Accounts.AddAsync(account);
+                await _context.Teachers.AddAsync(new Teacher { Account = account });
+                await _context.SaveChangesAsync();
+            }
+            else
+            {
+                account = new Account
+                {
+                    Login = model.Login,
+                    Password = model.Password,
+                    Name = model.Name,
+                    LastName = model.LastName,
+                    MiddleName = model.MiddleName,
+                    RoleId = model.RoleId
+                };
+                await _context.Accounts.AddAsync(account);
+                await _context.Students.AddAsync(new Student { GroupId = GroupId, Account = account });
+                await _context.SaveChangesAsync();
+            }
             return RedirectToAction("Index", "Account", new { RoleId = 0, GroupId = 0 });
         }
 
         [HttpPost]
         [Authorize(Roles = "admin")]
-        public async Task<IActionResult> Delete(int id, int roleId)
+        public async Task<IActionResult> Delete(int id)
         {
-            Account account;
-            if (roleId == 1)
-            {
-                account = await _context.Admins.FindAsync(id);
-                await _context.Admins.Remove(account);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index", "Account");
-            }
-            else if (roleId == 2)
-            {
-                account = await _context.Teachers.FindAsync(id);
-                await _context.Teachers.Remove(account);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index", "Account");
-            }
-            else
-            {
-                account = await _context.Students.FindAsync(id);
-                await _context.Students.Remove(account);
-                await _context.SaveChangesAsync();
-                return RedirectToAction("Index", "Account");
-            }
+            Account account = await _context.Accounts.FindAsync(id);
+            _context.Accounts.Remove(account);
+            await _context.SaveChangesAsync();
+            return RedirectToAction("Index", "Account");
         }
     }
 }

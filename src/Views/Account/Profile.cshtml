@@ -1,11 +1,5 @@
 ﻿@model IS_distance_learning.Models.Account
-@*@{ 
-    var parms = new Dictionary<string, string>
-            {
-                { "RoleId", "0" },
-                { "GroupId", "0" }
-            };
-}*@
+
 @{
     ViewData["Title"] = User.Identity.Name;
 }
@@ -32,7 +26,7 @@
                 {
                     <div class="d-flex col-md-8">
                         <h6 class="mr-2">Группа:</h6>
-                        <h6>@Model?.Group.Name</h6>
+                        <h6>@Model?.Student?.Group.Name</h6>
                     </div>
                 }
             }

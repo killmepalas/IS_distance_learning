@@ -12,9 +12,9 @@ namespace IS_distance_learning.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly AppDBContext _context;
+        private readonly AppDbContext _context;
 
-        public HomeController(AppDBContext context)
+        public HomeController(AppDbContext context)
         {
             _context = context;
         }
@@ -22,27 +22,38 @@ namespace IS_distance_learning.Controllers
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            List<Course> courses = null;
+            Account account = await _context.Accounts
+                .Include(a => a.Teacher)
+                .Include(a => a.Student)
+                .ThenInclude(s => s.Group)
+                .ThenInclude(g => g.Courses)
+                .ThenInclude(c => c.Teacher)
+                .FirstOrDefaultAsync(a => a.Id == int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)));
+            List<Course> courses = new();
             if (User.Identity.IsAuthenticated)
             {
                 if (User.IsInRole("admin"))
                 {
-                    courses = await _context.Courses.Include(c => c.Account).ToListAsync();
+                    courses = await _context.Courses
+                        .Include(c => c.Teacher)
+                        .ToListAsync();
                 }
                 else if (User.IsInRole("teacher"))
                 {
 
-                    courses = await _context.Courses.Include(c => c.Account).Where(c => c.AccountId == int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier))).ToListAsync();
+                    courses = await _context.Courses
+                        .Include(c => c.Teacher)
+                        .Where(c => c.TeacherId == account.Teacher.Id)
+                        .ToListAsync();
                 }
                 else
                 {
-                    var student = await _context.Accounts
-                        .Include(acc => acc.Group)
-                        .ThenInclude(gr => gr.Courses)
-                        .ThenInclude(c => c.Account)
-                        .FirstOrDefaultAsync(a => a.Id == int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)));
-
-                    courses = student.Group.Courses;
+                    courses = await _context.Courses
+                        .Include(c => c.Teacher)
+                        .ThenInclude(t => t.Account)
+                        .Include(c => c.Groups)
+                        .Where(c => c.Groups.Contains(account.Student.Group))
+                        .ToListAsync();
                 }
             }
 

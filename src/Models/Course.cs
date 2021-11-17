@@ -15,8 +15,10 @@ namespace IS_distance_learning.Models
         [Required]
         public string Name { get; set; }
         public string Description { get; set; }
-        
+
         public int TeacherId { get; set; }
         public Teacher Teacher { get; set; }
+
+        public List<Group> Groups { get; set; } = new List<Group>();
     }
 }

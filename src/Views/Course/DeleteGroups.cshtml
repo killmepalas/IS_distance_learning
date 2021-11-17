@@ -14,7 +14,7 @@
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="Id" />
             <input asp-for="Name" value="@Model.Name" type="hidden" />
-            <input asp-for="AccountId" type="hidden" value="@Model.AccountId" />
+            <input asp-for="TeacherId" type="hidden" value="@Model.TeacherId" />
             @if (ViewBag.Groups.Count != 0)
             {
                 <div class="form-group">
