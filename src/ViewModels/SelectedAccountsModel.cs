@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace IS_distance_learning.ViewModels
 {
     [Keyless]
-    public class AccountModel
+    public class SelectedAccountsModel
     {
         public List<Account> SelectedAccounts { get; set; }
     }

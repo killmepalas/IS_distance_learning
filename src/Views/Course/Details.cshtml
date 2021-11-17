@@ -9,12 +9,13 @@
         <h4>@Html.DisplayFor(model => model.Name)</h4>
         <div class="align-self-end">
             <span class="mr-2">Ведущий преподаватель:</span>
-            <span class="mr-2">@Html.DisplayFor(model => model.Account.LastName)</span>
-            <span class="mr-2">@Html.DisplayFor(model => model.Account.Name)</span>
-            <span>@Html.DisplayFor(model => model.Account.MiddleName)</span>
+            <span class="mr-2">@Html.DisplayFor(model => model.Teacher.Account.LastName)</span>
+            <span class="mr-2">@Html.DisplayFor(model => model.Teacher.Account.Name)</span>
+            <span>@Html.DisplayFor(model => model.Teacher.Account.MiddleName)</span>
         </div>
     </div>
     <table border="1" bordercolor="#dee2e6" class="table">
+        <tr>
         <tr>
             <th>Название группы</th>
             <th>Код группы</th>

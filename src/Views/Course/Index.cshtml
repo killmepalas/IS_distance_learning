@@ -44,9 +44,9 @@
                 @Html.DisplayFor(modelItem => item.Name)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Account.LastName)
+                @Html.DisplayFor(modelItem => item.Teacher.Account.LastName)
             </td>
-            @if (item.Account.Login == User.Identity.Name)
+            @if (item.Teacher.Account.Login == User.Identity.Name)
             {
                 <td>
                     <form method="get">
@@ -67,7 +67,7 @@
                     </form>
                 </td>
             }
-            @if (item.Account.Login == User.Identity.Name || User.IsInRole("admin"))
+            @if (item.Teacher.Account.Login == User.Identity.Name || User.IsInRole("admin"))
                 {
                 <td>
                     <form method="post">
