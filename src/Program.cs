@@ -15,7 +15,6 @@ namespace IS_distance_learning
         {
             CreateHostBuilder(args).Build().Run();
         }
-        // Виталя, что ты сделал?
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>(); });
