@@ -1,4 +1,4 @@
-﻿@model IS_distance_learning.ViewModels.SelectedAccountsModel
+﻿@model List<Account>
 
 @{
     ViewData["Title"] = "Аккаунты";
@@ -44,7 +44,7 @@
         <th>Редактировать</th>
         <th>Удалить</th>
     </tr>
-    @foreach (var acc in Model.SelectedAccounts)
+    @foreach (var acc in Model)
     {
         <tr>
             <td>@acc.LastName</td>
@@ -54,20 +54,16 @@
             <td>@acc.Student?.Group?.Name</td>
             <td>
                 <form method="get">
-                    <input name="id" class="hide disabled invisible" type="hidden" value="@acc.Id" />
+                    <input name="id" type="hidden" value="@acc.Id" />
                     <input type="submit" asp-action="Update" asp-controller="Account" class="btn btn-info" value="Редактировать" />
                 </form>
             </td>
             <td>
                 <form method="post">
-                    <input name="id" class="hide disabled invisible" type="hidden" value="@acc.Id" />
+                    <input name="id" type="hidden" value="@acc.Id" />
                     <input type="submit" asp-action="Delete" asp-controller="Account" class="btn btn-danger" value="Удалить" />
                 </form>
             </td>
         </tr>
     }
 </table>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
