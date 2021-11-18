@@ -185,7 +185,7 @@ namespace IS_distance_learning.Controllers
                     .Include(a => a.Student)
                     .ThenInclude(s => s.Group)
                     .ToListAsync();
-                var selectedAccounts = new SelectedAccountsModel { SelectedAccounts = accounts };
+                var selectedAccounts = accounts;
                 return View(selectedAccounts);
             }
             else if (groupId == 0)
@@ -198,7 +198,7 @@ namespace IS_distance_learning.Controllers
                     .Include(a => a.Student)
                     .ThenInclude(s => s.Group)
                     .ToListAsync();
-                var selectedAccounts = new SelectedAccountsModel { SelectedAccounts = accounts };
+                var selectedAccounts = accounts;
                 return View(selectedAccounts);
             }
             else
@@ -207,7 +207,7 @@ namespace IS_distance_learning.Controllers
                     .Include(a => a.Student)
                     .Where(a => a.Student.GroupId == groupId)
                     .ToListAsync();
-                var selectedAccounts = new SelectedAccountsModel { SelectedAccounts = accounts };
+                var selectedAccounts = accounts;
                 return View(selectedAccounts);
             }
         }
