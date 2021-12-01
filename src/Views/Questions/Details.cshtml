@@ -6,8 +6,7 @@
 
 <div class="d-flex flex-column">
 
-        <span class="mt-3">Вопрос: @Html.DisplayFor(model => model.Text)</span>
-    </div>
+    <span class="mt-3">Вопрос: @Html.DisplayFor(model => model.Text)</span>
     <form method="get" class="mb-3">
         <input name="QuestionId" class="hide disabled invisible" type="hidden" value="@Model.Id" />
         <input type="submit" asp-action="Create" asp-controller="Answers" class="btn btn-primary" value="Добавить ответ на вопрос" />

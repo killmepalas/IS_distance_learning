@@ -17,9 +17,9 @@ namespace IS_distance_learning.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> Details(int testId, int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var question = await _context.Questions.FirstOrDefaultAsync(x => x.TestId == testId && x.Id == id);
+            var question = await _context.Questions.Include(q => q.Answers).FirstOrDefaultAsync(x => x.Id == id);
             if (question == null)
             {
                 return NotFound();
@@ -30,8 +30,9 @@ namespace IS_distance_learning.Controllers
 
         [HttpGet]
         [Authorize(Roles = "teacher")]
-        public IActionResult Create()
+        public IActionResult Create(int TestId)
         {
+            ViewBag.TestId = TestId;
             return View();
         }
 
@@ -66,7 +67,7 @@ namespace IS_distance_learning.Controllers
         [HttpPost]
         [Authorize(Roles = "teacher")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Update(int id, [Bind("Text,TestId")] Question dto)
+        public async Task<IActionResult> Update(int id, [Bind("Text")] Question dto)
         {
             if (ModelState.IsValid)
             {
@@ -77,7 +78,6 @@ namespace IS_distance_learning.Controllers
                 }
 
                 question.Text = dto.Text;
-                question.TestId = dto.TestId;
 
                 _context.Questions.Update(question);
                 await _context.SaveChangesAsync();

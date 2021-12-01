@@ -30,8 +30,9 @@ namespace IS_distance_learning.Controllers
 
         [HttpGet]
         [Authorize(Roles = "teacher")]
-        public IActionResult Create()
+        public IActionResult Create(int QuestionId)
         {
+            ViewBag.QuestionId = QuestionId;
             return View();
         }
 
@@ -66,7 +67,7 @@ namespace IS_distance_learning.Controllers
         [HttpPost]
         [Authorize(Roles = "teacher")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Update(int id, [Bind("Text,IsRight,QuestionId")] Answer dto)
+        public async Task<IActionResult> Update(int id, [Bind("Text,IsRight")] Answer dto)
         {
             if (ModelState.IsValid)
             {
@@ -77,7 +78,6 @@ namespace IS_distance_learning.Controllers
                 }
 
                 answer.Text = dto.Text;
-                answer.QuestionId = dto.QuestionId;
                 answer.IsRight = dto.IsRight;
 
                 _context.Answers.Update(answer);
