@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using IS_distance_learning.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace IS_distance_learning.Controllers
 {
@@ -17,22 +19,19 @@ namespace IS_distance_learning.Controllers
         {
             _context = context;
         }
-
-        // GET: Tests
+        
+        [HttpGet]
+        [Authorize]
         public async Task<IActionResult> Index()
         {
             var appDbContext = _context.Tests.Include(t => t.Course);
             return View(await appDbContext.ToListAsync());
         }
-
-        // GET: Tests/Details/5
-        public async Task<IActionResult> Details(int? id)
+        
+        [HttpGet]
+        [Authorize]
+        public async Task<IActionResult> Details(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var test = await _context.Tests
                 .Include(t => t.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -44,23 +43,29 @@ namespace IS_distance_learning.Controllers
             return View(test);
         }
 
-        // GET: Tests/Create
+        [HttpGet]
+        [Authorize(Roles = "teacher")]
         public IActionResult Create()
         {
             ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name");
             return View();
         }
-
-        // POST: Tests/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        
         [HttpPost]
+        [Authorize(Roles = "teacher")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,Date,ExpirationDate,CourseId")] Test test)
+        public async Task<IActionResult> Create([Bind("Name,Description,Date,ExpirationDate,CourseId")] Test test)
         {
             if (ModelState.IsValid)
             {
-                _context.Add(test);
+                var course = await _context.Courses.FindAsync(test.CourseId);
+                var teacher = await _context.Teachers.FirstOrDefaultAsync(x =>
+                    x.AccountId.ToString() == User.FindFirstValue(ClaimTypes.NameIdentifier));
+                if (course == null || course.TeacherId != teacher.Id || test.ExpirationDate.CompareTo(test.Date) <= 0)
+                {
+                    return BadRequest(new {error = "Data is invalid."});
+                }
+                await _context.AddAsync(test);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
@@ -68,14 +73,10 @@ namespace IS_distance_learning.Controllers
             return View(test);
         }
 
-        // GET: Tests/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        [HttpGet]
+        [Authorize(Roles = "teacher")]
+        public async Task<IActionResult> Edit(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var test = await _context.Tests.FindAsync(id);
             if (test == null)
             {
@@ -84,51 +85,42 @@ namespace IS_distance_learning.Controllers
             ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name", test.CourseId);
             return View(test);
         }
-
-        // POST: Tests/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        
         [HttpPost]
+        [Authorize(Roles = "teacher")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,Date,ExpirationDate,CourseId")] Test test)
+        public async Task<IActionResult> Edit(int id, [Bind("Name,Description,Date,ExpirationDate,CourseId")] Test dto)
         {
-            if (id != test.Id)
-            {
-                return NotFound();
-            }
-
             if (ModelState.IsValid)
             {
-                try
+                var test = await _context.Tests.FindAsync(id);
+                if (test == null)
                 {
-                    _context.Update(test);
-                    await _context.SaveChangesAsync();
+                    return NotFound();
                 }
-                catch (DbUpdateConcurrencyException)
+                var course = await _context.Courses.FindAsync(dto.CourseId);
+                var teacher = await _context.Teachers.FirstOrDefaultAsync(x =>
+                    x.AccountId.ToString() == User.FindFirstValue(ClaimTypes.NameIdentifier));
+                if (course == null || course.TeacherId != teacher.Id || dto.ExpirationDate.CompareTo(dto.Date) <= 0)
                 {
-                    if (!TestExists(test.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    return BadRequest(new {error = "Data is invalid."});
                 }
+
+                test.Name = dto.Name;
+                test.Description = dto.Description;
+                test.Date = dto.Date;
+                test.ExpirationDate = dto.ExpirationDate;
+                test.CourseId = dto.CourseId;
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name", test.CourseId);
-            return View(test);
+            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name", dto.CourseId);
+            return View(dto);
         }
-
-        // GET: Tests/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        
+        [HttpGet]
+        [Authorize(Roles = "teacher")]
+        public async Task<IActionResult> Delete(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var test = await _context.Tests
                 .Include(t => t.Course)
                 .FirstOrDefaultAsync(m => m.Id == id);
@@ -136,24 +128,30 @@ namespace IS_distance_learning.Controllers
             {
                 return NotFound();
             }
+            var course = await _context.Courses.FindAsync(test.CourseId);
+            var teacher = await _context.Teachers.FirstOrDefaultAsync(x =>
+                x.AccountId.ToString() == User.FindFirstValue(ClaimTypes.NameIdentifier));
+            if (course.TeacherId != teacher.Id)
+            {
+                return Forbid();
+            }
 
             return View(test);
         }
-
-        // POST: Tests/Delete/5
+        
         [HttpPost, ActionName("Delete")]
+        [Authorize(Roles = "teacher")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var test = await _context.Tests.FindAsync(id);
+            if (test == null)
+            {
+                return NotFound();
+            }
             _context.Tests.Remove(test);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-        }
-
-        private bool TestExists(int id)
-        {
-            return _context.Tests.Any(e => e.Id == id);
         }
     }
 }
