@@ -280,17 +280,17 @@ namespace IS_distance_learning.Controllers
             var course = await _context.Courses.Include(x => x.Tests).Include(c => c.Groups).Include(c => c.Teacher).ThenInclude(t => t.Account).FirstOrDefaultAsync(c => c.Id == id);
             if (User.IsInRole("admin"))
             {
-                var details = new CourseDetailsModel { Name = course.Name, Teacher = course.Teacher, Groups = course.Groups };
+                var details = new CourseDetailsModel { Name = course.Name, Description = course.Description, Teacher = course.Teacher, Groups = course.Groups, Tests = course.Tests };
                 return View(details);
             }
             else if (User.IsInRole("teacher"))
             {
-                var details = new CourseDetailsModel { Name = course.Name, Teacher = course.Teacher, Groups = course.Groups };
+                var details = new CourseDetailsModel { CourseId = course.Id, Name = course.Name, Description = course.Description, Teacher = course.Teacher, Groups = course.Groups, Tests = course.Tests };
                 return View(details);
             }
             else
             {
-                var details = new CourseDetailsModel { Name = course.Name, Teacher = course.Teacher };
+                var details = new CourseDetailsModel { Name = course.Name, Description = course.Description, Teacher = course.Teacher, Tests = course.Tests };
                 return View(details);
             }
         }
