@@ -1,48 +1,48 @@
 ﻿@model IS_distance_learning.Models.Test
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Подробнее";
 }
 
-<h1>Details</h1>
-
-<div>
-    <h4>Test</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Date)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Date)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.ExpirationDate)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.ExpirationDate)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Course)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Course.Name)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Update" asp-route-id="@Model.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+<div class="d-flex flex-column align-items-center">
+    <div class="d-flex flex-column mb-2 course">
+        <h4>@Html.DisplayFor(model => model.Name)</h4>
+        <span class="mt-3">Описание: @Html.DisplayFor(model => model.Description)</span>
+    </div>
+    <form method="get" class="mb-3">
+        <input name="TestId" class="hide disabled invisible" type="hidden" value="@Model.Id" />
+        <input type="submit" asp-action="Create" asp-controller="Questions" class="btn btn-primary" value="Добавить вопрос" />
+    </form>
+        
+    
+    <table border="1" bordercolor="#dee2e6" class="table">
+        <tr>
+        <tr>
+            <th>Вопрос</th>
+            <th>
+                Редактировать
+            </th>
+            <th>
+                Удалить вопрос
+            </th>
+        </tr>
+            @foreach (Question q in Model.Questions)
+            {
+                <tr>
+                    <td>@q.Text</td>
+                    <td>
+                        <form method="get">
+                            <input name="id" class="hide disabled invisible" type="hidden" value="@q.Id" />
+                            <input type="submit" asp-action="Update" asp-controller="Questions" class="btn btn-info" value="Редактировать" />
+                        </form>
+                    </td>
+                    <td>
+                        <form method="post">
+                            <input name="id" class="hide disabled invisible" type="hidden" value="@q.Id" />
+                            <input type="submit" asp-action="Delete" asp-controller="Questions" class="btn btn-danger" value="Удалить" />
+                        </form>
+                    </td>
+                </tr>
+            }
+    </table>
 </div>

@@ -34,8 +34,9 @@ namespace IS_distance_learning.Controllers
 
         [HttpGet]
         [Authorize(Roles = "teacher")]
-        public IActionResult Create()
+        public IActionResult Create(int CourseId)
         {
+            ViewBag.CourseId = CourseId;
             return View();
         }
         
