@@ -20,5 +20,6 @@ namespace IS_distance_learning.Models
         public Teacher Teacher { get; set; }
 
         public List<Group> Groups { get; set; } = new List<Group>();
+        public List<Test> Tests { get; set; } = new List<Test>();
     }
 }

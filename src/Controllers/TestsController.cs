@@ -22,24 +22,21 @@ namespace IS_distance_learning.Controllers
         
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int courseId)
         {
-            var appDbContext = _context.Tests.Include(t => t.Course);
-            return View(await appDbContext.ToListAsync());
+            var tests = await _context.Tests.Where(x => x.CourseId == courseId).ToListAsync();
+            return View(tests);
         }
         
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Details(int courseId, int id)
         {
-            var test = await _context.Tests
-                .Include(t => t.Course)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var test = await _context.Tests.FirstOrDefaultAsync(x => x.CourseId == courseId && x.Id == id);
             if (test == null)
             {
                 return NotFound();
-            }
-
+            } 
             return View(test);
         }
 
@@ -47,7 +44,6 @@ namespace IS_distance_learning.Controllers
         [Authorize(Roles = "teacher")]
         public IActionResult Create()
         {
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name");
             return View();
         }
         
@@ -69,27 +65,25 @@ namespace IS_distance_learning.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name", test.CourseId);
             return View(test);
         }
 
         [HttpGet]
         [Authorize(Roles = "teacher")]
-        public async Task<IActionResult> Edit(int id)
+        public async Task<IActionResult> Update(int id)
         {
             var test = await _context.Tests.FindAsync(id);
             if (test == null)
             {
                 return NotFound();
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name", test.CourseId);
             return View(test);
         }
         
         [HttpPost]
         [Authorize(Roles = "teacher")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Name,Description,Date,ExpirationDate,CourseId")] Test dto)
+        public async Task<IActionResult> Update(int id, [Bind("Name,Description,Date,ExpirationDate,CourseId")] Test dto)
         {
             if (ModelState.IsValid)
             {
@@ -113,17 +107,15 @@ namespace IS_distance_learning.Controllers
                 test.CourseId = dto.CourseId;
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CourseId"] = new SelectList(_context.Courses, "Id", "Name", dto.CourseId);
             return View(dto);
         }
-        
-        [HttpGet]
+
+        [HttpPost]
         [Authorize(Roles = "teacher")]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var test = await _context.Tests
-                .Include(t => t.Course)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var test = await _context.Tests.FindAsync(id);
             if (test == null)
             {
                 return NotFound();
@@ -133,21 +125,7 @@ namespace IS_distance_learning.Controllers
                 x.AccountId.ToString() == User.FindFirstValue(ClaimTypes.NameIdentifier));
             if (course.TeacherId != teacher.Id)
             {
-                return Forbid();
-            }
-
-            return View(test);
-        }
-        
-        [HttpPost, ActionName("Delete")]
-        [Authorize(Roles = "teacher")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var test = await _context.Tests.FindAsync(id);
-            if (test == null)
-            {
-                return NotFound();
+                Forbid();
             }
             _context.Tests.Remove(test);
             await _context.SaveChangesAsync();

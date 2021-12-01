@@ -277,7 +277,7 @@ namespace IS_distance_learning.Controllers
         [Authorize]
         public async Task<IActionResult> Details(int id)
         {
-            var course = await _context.Courses.Include(c => c.Groups).Include(c => c.Teacher).ThenInclude(t => t.Account).FirstOrDefaultAsync(c => c.Id == id);
+            var course = await _context.Courses.Include(x => x.Tests).Include(c => c.Groups).Include(c => c.Teacher).ThenInclude(t => t.Account).FirstOrDefaultAsync(c => c.Id == id);
             if (User.IsInRole("admin"))
             {
                 var details = new CourseDetailsModel { Name = course.Name, Teacher = course.Teacher, Groups = course.Groups };
