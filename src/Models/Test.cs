@@ -20,5 +20,7 @@ namespace IS_distance_learning.Models
         
         public int CourseId { get; set; }
         public Course Course { get; set; }
+
+        public List<Question> Questions { get; set; } = new List<Question>();
     }
 }
