@@ -12,5 +12,6 @@ namespace IS_distance_learning.Models
         
         public int TestId { get; set; }
         public Test Test { get; set; }
+        public List<Answer> Answers { get; set; } = new List<Answer>();
     }
 }

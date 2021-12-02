@@ -22,9 +22,9 @@ namespace IS_distance_learning.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<IActionResult> Details(int courseId, int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var test = await _context.Tests.FirstOrDefaultAsync(x => x.CourseId == courseId && x.Id == id);
+            var test = await _context.Tests.Include(t => t.Questions).FirstOrDefaultAsync(x => x.Id == id);
             if (test == null)
             {
                 return NotFound();
@@ -34,8 +34,9 @@ namespace IS_distance_learning.Controllers
 
         [HttpGet]
         [Authorize(Roles = "teacher")]
-        public IActionResult Create()
+        public IActionResult Create(int CourseId)
         {
+            ViewBag.CourseId = CourseId;
             return View();
         }
         

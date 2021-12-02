@@ -1,0 +1,36 @@
+﻿@model IS_distance_learning.Models.Answer
+
+@{
+    ViewData["Title"] = "Создание ответа";
+}
+
+<h1>Ответ на вопрос</h1>
+
+<hr />
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Text" class="control-label">Введите ответ</label>
+                <input asp-for="Text" class="form-control" />
+                <span asp-validation-for="Text" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IsRight" class="control-label">Правильный ответ</label>
+                <input asp-for="IsRight" type="checkbox" class="form-check" />
+            </div>
+            <div class="form-group">
+                <input asp-for="QuestionId" class="form-control" hidden value="@ViewBag.QuestionId" />
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Добавить" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

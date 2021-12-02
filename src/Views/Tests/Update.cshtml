@@ -1,13 +1,13 @@
 ﻿@model IS_distance_learning.Models.Test
 
 @{
-    ViewData["Title"] = "Edit";
+    ViewData["Title"] = "Редактирование теста";
 }
 
-<h1>Edit</h1>
+<h1>Редактирование теста</h1>
 
-<h4>Test</h4>
 <hr />
+
 <div class="row">
     <div class="col-md-4">
         <form asp-action="Update">
@@ -39,14 +39,10 @@
                 <span asp-validation-for="CourseId" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
+                <input type="submit" value="Сохранить" class="btn btn-primary" />
             </div>
         </form>
     </div>
-</div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
 
 @section Scripts {
