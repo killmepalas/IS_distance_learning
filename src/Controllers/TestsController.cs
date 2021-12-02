@@ -124,5 +124,52 @@ namespace IS_distance_learning.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction("Details", "Course", new {id = course.Id});
         }
+
+        [HttpGet]
+        [Authorize(Roles = "student")]
+        public async Task<IActionResult> Pass(int testId, int questionId = 0)
+        {
+            var test = await _context.Tests.Include(x => x.Questions).ThenInclude(x => x.Answers)
+                .FirstOrDefaultAsync(x => x.Id == testId);
+            if (questionId == 0)
+            {
+                return View(test.Questions.First());
+            }
+
+            var question = test.Questions.FirstOrDefault(x => x.Id == questionId);
+            if (question == null)
+            {
+                return RedirectToAction("Details", "Tests", new {id = test.Id});
+            }
+
+            return View(question);
+        }
+
+        [HttpPost]
+        [Authorize(Roles = "student")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Pass(AnswerStudent dto)
+        {
+            if (ModelState.IsValid)
+            {
+                var studentsAnswer = new AnswerStudent
+                {
+                    AnswerId = dto.AnswerId,
+                    StudentId = dto.StudentId
+                };
+
+                var answer = await _context.Answers.FindAsync(dto.AnswerId);
+                var question = await _context.Questions.FindAsync(answer.QuestionId);
+                var test = await _context.Tests.FindAsync(question.TestId);
+                await _context.AnswerStudent.AddAsync(studentsAnswer);
+                await _context.SaveChangesAsync();
+                var next = await _context.Questions.FirstOrDefaultAsync(x => x.Id > question.Id && x.TestId == test.Id);
+                if (next == null)
+                {
+                    return RedirectToAction("Details", "Tests", new {id = test.Id});
+                }
+                return RedirectToAction("Pass", "Tests", new {testId = test.Id, questionId = next.Id});
+            }
+        }
     }
 }
