@@ -10,7 +10,7 @@ namespace IS_distance_learning.Models
     {
         public int Id { get; set; }
         
-        public int? StudentId { get; set; }
+        public int StudentId { get; set; }
         public Student Student { get; set; }
 
         public int? TestId { get; set; }

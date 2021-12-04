@@ -10,11 +10,10 @@
     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
     @foreach (var answer in Model.Answers)
     {
-        <input asp-for="Id" type="hidden" value="@answer.Id" />
-        <div class="form-row">
-            <label asp-for="Text" class="control-label">@answer.Text</label>
-            <input asp-for="Text" type="radio" class="form-control w-25" value="@answer.Text" />
-            <span asp-validation-for="Text" class="text-danger"></span>
+        <div class="form-row align-items-center">
+            <input asp-for="Id" type="radio" value="@answer.Id" />
+            <span class="ml-2 h5">@answer.Text</span>
+            <span asp-validation-for="Id" class="text-danger"></span>
         </div>
     }
     <p>
@@ -22,3 +21,6 @@
     </p>
 </form>
 
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
