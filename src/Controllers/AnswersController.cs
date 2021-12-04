@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using IS_distance_learning.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -103,6 +105,46 @@ namespace IS_distance_learning.Controllers
             await _context.SaveChangesAsync();
 
             return RedirectToAction("Details", "Questions", new {id = answer.QuestionId});
+        }
+        
+        [HttpGet]
+        [Authorize(Roles = "teacher")]
+        public async Task<IActionResult> Index(int testId = 0, int groupId = 0)
+        {
+            ViewBag.Groups = await _context.Groups.ToListAsync();
+            ViewBag.Tests = await _context.Tests.ToListAsync();
+            List<Attempt> attempts = new ();
+            if (testId == 0)
+            {
+                attempts = await _context.Attempts
+                    .Include(x => x.Test)
+                    .Include(a => a.Student)
+                    .ThenInclude(s => s.Group)
+                    .ToListAsync();
+                var selectedAttempts = attempts;
+                return View(selectedAttempts);
+            }
+            else if (groupId == 0)
+            {
+                attempts = await _context.Attempts
+                    .Where(a => a.TestId == testId)
+                    .Include(x => x.Test)
+                    .Include(a => a.Student)
+                    .ThenInclude(s => s.Group)
+                    .ToListAsync();
+                var selectedAttempts = attempts;
+                return View(selectedAttempts);
+            }
+            else
+            {
+                attempts = await _context.Attempts
+                    .Include(x => x.Test)
+                    .Include(a => a.Student)
+                    .Where(a => a.Student.GroupId == groupId && a.TestId == testId)
+                    .ToListAsync();
+                var selectedAttempts = attempts;
+                return View(selectedAttempts);
+            }
         }
     }
 }
