@@ -117,9 +117,12 @@ namespace IS_distance_learning.Controllers
             if (testId == 0)
             {
                 attempts = await _context.Attempts
-                    .Include(x => x.Test)
+                    .Include(a => a.Test)
+                    .ThenInclude(t => t.Questions)
                     .Include(a => a.Student)
                     .ThenInclude(s => s.Group)
+                    .Include(a => a.Student)
+                    .ThenInclude(s => s.Account)
                     .ToListAsync();
                 var selectedAttempts = attempts;
                 return View(selectedAttempts);
@@ -128,7 +131,8 @@ namespace IS_distance_learning.Controllers
             {
                 attempts = await _context.Attempts
                     .Where(a => a.TestId == testId)
-                    .Include(x => x.Test)
+                    .Include(a => a.Test)
+                    .ThenInclude(t => t.Questions)
                     .Include(a => a.Student)
                     .ThenInclude(s => s.Group)
                     .ToListAsync();
@@ -138,7 +142,8 @@ namespace IS_distance_learning.Controllers
             else
             {
                 attempts = await _context.Attempts
-                    .Include(x => x.Test)
+                    .Include(a => a.Test)
+                    .ThenInclude(t => t.Questions)
                     .Include(a => a.Student)
                     .Where(a => a.Student.GroupId == groupId && a.TestId == testId)
                     .ToListAsync();
