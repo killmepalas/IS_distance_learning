@@ -109,14 +109,14 @@ namespace IS_distance_learning.Controllers
         
         [HttpGet]
         [Authorize(Roles = "teacher")]
-        public async Task<IActionResult> Index(int testId = 0, int groupId = 0)
+        public async Task<IActionResult> Index(int courseId, int testId = 0, int groupId = 0)
         {
             ViewBag.Groups = await _context.Groups.ToListAsync();
-            ViewBag.Tests = await _context.Tests.ToListAsync();
+            ViewBag.Tests = await _context.Tests.Where(x => x.CourseId == courseId).ToListAsync();
             List<Attempt> attempts = new ();
             if (testId == 0)
             {
-                attempts = await _context.Attempts
+                attempts = await _context.Attempts.Include(x => x.Test).Where(x => x.Test.CourseId == courseId)
                     .Include(x => x.Test)
                     .Include(a => a.Student)
                     .ThenInclude(s => s.Group)
@@ -126,7 +126,7 @@ namespace IS_distance_learning.Controllers
             }
             else if (groupId == 0)
             {
-                attempts = await _context.Attempts
+                attempts = await _context.Attempts.Include(x => x.Test).Where(x => x.Test.CourseId == courseId)
                     .Where(a => a.TestId == testId)
                     .Include(x => x.Test)
                     .Include(a => a.Student)
@@ -137,7 +137,7 @@ namespace IS_distance_learning.Controllers
             }
             else
             {
-                attempts = await _context.Attempts
+                attempts = await _context.Attempts.Include(x => x.Test).Where(x => x.Test.CourseId == courseId)
                     .Include(x => x.Test)
                     .Include(a => a.Student)
                     .Where(a => a.Student.GroupId == groupId && a.TestId == testId)
