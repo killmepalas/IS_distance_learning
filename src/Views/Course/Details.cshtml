@@ -21,10 +21,10 @@
         </div>
         @if (User.IsInRole("teacher"))
         {
-    <form method="get">
-        <input name="CourseId" class="hide disabled invisible" type="hidden" value="@Model.CourseId" />
-        <input type="submit" asp-action="Create" asp-controller="Tests" class="btn btn-primary" value="Добавить тест" />
-    </form>
+            <form method="get">
+                <input name="CourseId" class="hide disabled invisible" type="hidden" value="@Model.CourseId" />
+                <input type="submit" asp-action="Create" asp-controller="Tests" class="btn btn-primary" value="Добавить тест" />
+            </form>
         }
     </div>
     @if (User.IsInRole("teacher") || User.IsInRole("admin"))
@@ -118,4 +118,27 @@
             </tr>
         }
     </table>
+    @if (User.IsInRole("student"))
+    {
+        <h3>Пройденные тесты</h3>
+        <table border="1" bordercolor="#dee2e6" class="table">
+            <tr>
+                <th>Название теста</th>
+                <th>Описание</th>
+                <th>Дата начала</th>
+                <th>Дата окончания</th>
+                <th>Кол-во правильных ответов</th>
+            </tr>
+            @foreach (Attempt a in Model.Attempts)
+            {
+                <tr>
+                    <td>@a.Test.Name</td>
+                    <td>@a.Test.Description</td>
+                    <td>@a.Test.Date</td>
+                    <td>@a.Test.ExpirationDate</td>
+                    <td>@a.Mark из @a.Test.Questions.Count</td>
+                </tr>
+            }
+        </table>
+    }
 </div>
