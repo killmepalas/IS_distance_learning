@@ -41,6 +41,11 @@
     </div>
 </div>
 
+<form asp-action="Details" asp-controller="Course" method="get">
+    <input name="id" type="hidden" value="@Model.CourseId" />
+    <input type="submit" value="Вернуться к курсу" class="btn-link border-0 bg-white" />
+</form>
+
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
