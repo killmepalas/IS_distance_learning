@@ -61,7 +61,6 @@
     }
     <table border="1" bordercolor="#dee2e6" class="table">
         <tr>
-        <tr>
             <th>Название теста</th>
             <th>Описание</th>
             <th>Дата начала</th>
@@ -79,15 +78,15 @@
                 </th>
             }
         </tr>
-        @if (User.IsInRole("admin") || User.IsInRole("teacher"))
+        @foreach (Test t in Model.Tests)
         {
-            @foreach (Test t in Model.Tests)
-            {
-                <tr>
-                    <td>@t.Name</td>
-                    <td>@t.Description</td>
-                    <td>@t.Date</td>
-                    <td>@t.ExpirationDate</td>
+            <tr>
+                <td>@t.Name</td>
+                <td>@t.Description</td>
+                <td>@t.Date</td>
+                <td>@t.ExpirationDate</td>
+                @if (User.IsInRole("teacher"))
+                {
                     <td>
                         <form method="get">
                             <input name="id" class="hide disabled invisible" type="hidden" value="@t.Id" />
@@ -106,8 +105,17 @@
                             <input type="submit" asp-action="Delete" asp-controller="Tests" class="btn btn-danger" value="Удалить" />
                         </form>
                     </td>
-                </tr>
-            }
+                }
+                @if (User.IsInRole("student"))
+                {
+                    <td>
+                        <form method="get">
+                            <input name="testId" class="hide disabled invisible" type="hidden" value="@t.Id" />
+                            <input type="submit" asp-action="Pass" asp-controller="Tests" class="btn btn-success" value="Пройти тест" />
+                        </form>
+                    </td>
+                }
+            </tr>
         }
     </table>
 </div>
