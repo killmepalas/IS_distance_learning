@@ -290,7 +290,12 @@ namespace IS_distance_learning.Controllers
             }
             else
             {
-                var details = new CourseDetailsModel { Name = course.Name, Description = course.Description, Teacher = course.Teacher, Tests = course.Tests };
+                var student = await _context.Accounts.FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
+                var attempts = await _context.Attempts.Where(x => x.StudentId == student.Id).ToListAsync();
+
+                var tests = course.Tests.Where(x => attempts.Any(y => y.TestId != x.Id)).ToList();
+
+                var details = new CourseDetailsModel { Name = course.Name, Description = course.Description, Teacher = course.Teacher, Tests = tests, Attempts = attempts};
                 return View(details);
             }
         }

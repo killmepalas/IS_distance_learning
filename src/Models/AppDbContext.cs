@@ -19,7 +19,7 @@ namespace IS_distance_learning.Models
         public DbSet<Test> Tests { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }
-        public DbSet<AnswerStudent> AnswerStudent { get; set; }
+        public DbSet<Attempt> Attempts { get; set; }
 
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
