@@ -21,9 +21,12 @@
         </div>
         @if (User.IsInRole("teacher"))
         {
-            <form method="get">
+            <form class="mr-3" method="get">
                 <input name="CourseId" class="hide disabled invisible" type="hidden" value="@Model.CourseId" />
                 <input type="submit" asp-action="Create" asp-controller="Tests" class="btn btn-primary" value="Добавить тест" />
+            </form>
+            <form method="get">
+                <input type="submit" asp-action="Index" asp-controller="Answers" class="btn btn-primary" value="Ответы студентов" />
             </form>
         }
     </div>
