@@ -148,28 +148,44 @@ namespace IS_distance_learning.Controllers
         [HttpPost]
         [Authorize(Roles = "student")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Pass(AnswerStudent dto)
+        public async Task<IActionResult> Pass(Answer dto)
         {
             if (ModelState.IsValid)
             {
-                var studentsAnswer = new AnswerStudent
-                {
-                    AnswerId = dto.AnswerId,
-                    StudentId = dto.StudentId
-                };
-
-                var answer = await _context.Answers.FindAsync(dto.AnswerId);
+                
+                var answer = await _context.Answers.FindAsync(dto.Id);
                 var question = await _context.Questions.FindAsync(answer.QuestionId);
                 var test = await _context.Tests.FindAsync(question.TestId);
-                await _context.AnswerStudent.AddAsync(studentsAnswer);
+                var student = await _context.Accounts.FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
+                var attempt = await _context.Attempts.FirstOrDefaultAsync(x => x.StudentId == student.Id && x.TestId == test.Id);
+                if (attempt == null)
+                {
+                    attempt = new Attempt
+                    {
+                        StudentId = student.Id,
+                        TestId = test.Id,
+                        Mark = (answer.IsRight ? 1 : 0)
+                    };
+                    
+                    await _context.Attempts.AddAsync(attempt);
+                }
+                else
+                {
+                    attempt.Mark += (answer.IsRight ? 1 : 0);
+                    _context.Attempts.Update(attempt);
+                }
+                
                 await _context.SaveChangesAsync();
                 var next = await _context.Questions.FirstOrDefaultAsync(x => x.Id > question.Id && x.TestId == test.Id);
                 if (next == null)
                 {
-                    return RedirectToAction("Details", "Tests", new {id = test.Id});
+                    return RedirectToAction("Details", "Course", new {id = test.CourseId});
                 }
                 return RedirectToAction("Pass", "Tests", new {testId = test.Id, questionId = next.Id});
             }
+            ModelState.AddModelError("", "Ответ на вопрос не выбран!");
+
+            return View();
         }
     }
 }

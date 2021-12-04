@@ -16,5 +16,6 @@ namespace IS_distance_learning.ViewModels
         public Teacher Teacher { get; set; }
         public List<Test> Tests { get; set; }
         public List<Group> Groups { get; set; }
+        public List<Attempt> Attempts { get; set; }
     }
 }
