@@ -1,0 +1,24 @@
+﻿@model IS_distance_learning.Models.Question
+
+@{
+    ViewData["Title"] = "Прохождение теста";
+}
+
+<h1>@Model.Text</h1>
+
+<form method="post" asp-action="Pass">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    @foreach (var answer in Model.Answers)
+    {
+        <input asp-for="Id" type="hidden" value="@answer.Id" />
+        <div class="form-row">
+            <label asp-for="Text" class="control-label">@answer.Text</label>
+            <input asp-for="Text" type="radio" class="form-control w-25" value="@answer.Text" />
+            <span asp-validation-for="Text" class="text-danger"></span>
+        </div>
+    }
+    <p>
+        <input type="submit" class="btn btn-success" value="Подтвердить ответ" />
+    </p>
+</form>
+
