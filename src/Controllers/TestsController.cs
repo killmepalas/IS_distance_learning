@@ -160,13 +160,13 @@ namespace IS_distance_learning.Controllers
                 }
                 var question = await _context.Questions.FindAsync(answer.QuestionId);
                 var test = await _context.Tests.FindAsync(question.TestId);
-                var student = await _context.Accounts.FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
+                var student = await _context.Accounts.Include(x => x.Student).FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
                 var attempt = await _context.Attempts.FirstOrDefaultAsync(x => x.StudentId == student.Id && x.TestId == test.Id);
                 if (attempt == null)
                 {
                     attempt = new Attempt
                     {
-                        StudentId = student.Id,
+                        StudentId = student.Student.Id,
                         TestId = test.Id,
                         Mark = (answer.IsRight ? 1 : 0)
                     };
