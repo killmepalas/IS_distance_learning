@@ -74,7 +74,7 @@
                 <td>@t.Description</td>
                 <td>@t.Date</td>
                 <td>@t.ExpirationDate</td>
-                @if (User.IsInRole("teacher"))
+                @if (User.IsInRole("teacher") && (t.Date.CompareTo(DateTime.Now) > 0) || (t.ExpirationDate.CompareTo(DateTime.Now) < 0))
                 {
                     <td>
                         <form method="get">
