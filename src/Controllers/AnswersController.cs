@@ -111,30 +111,41 @@ namespace IS_distance_learning.Controllers
         [Authorize(Roles = "teacher")]
         public async Task<IActionResult> Index(int courseId, int testId = 0, int groupId = 0)
         {
+            ViewBag.CourseId = courseId;
             ViewBag.Groups = await _context.Groups.ToListAsync();
             ViewBag.Tests = await _context.Tests.Where(x => x.CourseId == courseId).ToListAsync();
             List<Attempt> attempts = new ();
-            if (testId == 0)
+            if (testId != 0 && groupId != 0)
             {
                 attempts = await _context.Attempts.Include(x => x.Test).ThenInclude(t => t.Questions).Where(x => x.Test.CourseId == courseId)
                     .Include(x => x.Test)
                     .Include(a => a.Student)
-                    .ThenInclude(s => s.Group)
+                    .ThenInclude(s => s.Account)
+                    .Where(a => a.Student.GroupId == groupId && a.TestId == testId)
+                    .ToListAsync();
+                var selectedAttempts = attempts;
+                return View(selectedAttempts);
+            }
+            else if (testId == 0 && groupId == 0)
+            {
+                attempts = await _context.Attempts.Include(x => x.Test).Where(x => x.Test.CourseId == courseId)
+                    .Include(a => a.Test)
+                    .ThenInclude(t => t.Questions)
                     .Include(a => a.Student)
                     .ThenInclude(s => s.Account)
                     .ToListAsync();
                 var selectedAttempts = attempts;
                 return View(selectedAttempts);
             }
-            else if (groupId == 0)
+            else if (testId == 0)
             {
                 attempts = await _context.Attempts.Include(x => x.Test).Where(x => x.Test.CourseId == courseId)
-                    .Where(a => a.TestId == testId)
-                    .Include(a => a.Test)
-                    .ThenInclude(t => t.Questions)
-                    .Include(a => a.Student)
-                    .ThenInclude(s => s.Group)
-                    .ToListAsync();
+                   .Include(a => a.Test)
+                   .ThenInclude(t => t.Questions)
+                   .Include(a => a.Student)
+                   .ThenInclude(s => s.Account)
+                   .Where(a => a.Student.GroupId == groupId)
+                   .ToListAsync();
                 var selectedAttempts = attempts;
                 return View(selectedAttempts);
             }
@@ -143,7 +154,8 @@ namespace IS_distance_learning.Controllers
                 attempts = await _context.Attempts.Include(x => x.Test).ThenInclude(t => t.Questions).Where(x => x.Test.CourseId == courseId)
                     .Include(x => x.Test)
                     .Include(a => a.Student)
-                    .Where(a => a.Student.GroupId == groupId && a.TestId == testId)
+                    .ThenInclude(s => s.Account)
+                    .Where(a => a.TestId == testId)
                     .ToListAsync();
                 var selectedAttempts = attempts;
                 return View(selectedAttempts);
