@@ -292,7 +292,7 @@ namespace IS_distance_learning.Controllers
             {
                 var student = await _context.Accounts.FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
                 var attempts = await _context.Attempts.Where(x => x.StudentId == student.Student.Id).ToListAsync();
-
+                
                 var tests = course.Tests.Where(x => !attempts.Any() || attempts.All(y => y.TestId != x.Id)).ToList();
 
                 var details = new CourseDetailsModel { Name = course.Name, Description = course.Description, Teacher = course.Teacher, Tests = tests, Attempts = attempts};
