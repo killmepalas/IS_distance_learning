@@ -30,36 +30,21 @@
             </form>
         }
     </div>
-    @if (User.IsInRole("teacher") || User.IsInRole("admin"))
+    @if (User.IsInRole("teacher"))
     {
         <table border="1" bordercolor="#dee2e6" class="table">
             <tr>
             <tr>
                 <th>Название группы</th>
                 <th>Код группы</th>
-                @if (User.IsInRole("teacher"))
-                {
-                    <th>
-                        <string>Открепить группу</string>
-                    </th>
-                }
             </tr>
-            @if (User.IsInRole("admin") || User.IsInRole("teacher"))
-            {
                 @foreach (Group g in Model.Groups)
                 {
                     <tr>
                         <td>@g.Name</td>
                         <td>@g.Code</td>
-                        <td>
-                            <form method="get">
-                                <input name="id" class="hide disabled invisible" type="hidden" value="@g.Id" />
-                                <input type="submit" asp-action="Update" asp-controller="Group" class="btn btn-info" value="Редактировать" />
-                            </form>
-                        </td>
                     </tr>
                 }
-            }
         </table>
     }
     <table border="1" bordercolor="#dee2e6" class="table">
