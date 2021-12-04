@@ -33,6 +33,7 @@
                 <input asp-for="ExpirationDate" class="form-control" />
                 <span asp-validation-for="ExpirationDate" class="text-danger"></span>
             </div>
+            <input type="hidden" asp-for="CourseId" value="@Model.CourseId" />
             <div class="form-group">
                 <input type="submit" value="Сохранить" class="btn btn-primary" />
             </div>
