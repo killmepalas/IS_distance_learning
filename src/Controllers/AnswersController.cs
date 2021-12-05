@@ -118,7 +118,6 @@ namespace IS_distance_learning.Controllers
             if (testId != 0 && groupId != 0)
             {
                 attempts = await _context.Attempts.Include(x => x.Test).ThenInclude(t => t.Questions).Where(x => x.Test.CourseId == courseId)
-                    .Include(x => x.Test)
                     .Include(a => a.Student)
                     .ThenInclude(s => s.Account)
                     .Where(a => a.Student.GroupId == groupId && a.TestId == testId)
@@ -128,9 +127,7 @@ namespace IS_distance_learning.Controllers
             }
             else if (testId == 0 && groupId == 0)
             {
-                attempts = await _context.Attempts.Include(x => x.Test).Where(x => x.Test.CourseId == courseId)
-                    .Include(a => a.Test)
-                    .ThenInclude(t => t.Questions)
+                attempts = await _context.Attempts.Include(x => x.Test).ThenInclude(t => t.Questions).Where(x => x.Test.CourseId == courseId)
                     .Include(a => a.Student)
                     .ThenInclude(s => s.Account)
                     .ToListAsync();
@@ -139,20 +136,17 @@ namespace IS_distance_learning.Controllers
             }
             else if (testId == 0)
             {
-                attempts = await _context.Attempts.Include(x => x.Test).Where(x => x.Test.CourseId == courseId)
-                   .Include(a => a.Test)
-                   .ThenInclude(t => t.Questions)
-                   .Include(a => a.Student)
-                   .ThenInclude(s => s.Account)
-                   .Where(a => a.Student.GroupId == groupId)
-                   .ToListAsync();
+                attempts = await _context.Attempts.Include(x => x.Test).ThenInclude(t => t.Questions).Where(x => x.Test.CourseId == courseId)
+                    .Include(a => a.Student)
+                    .ThenInclude(s => s.Account)
+                    .Where(a => a.Student.GroupId == groupId)
+                    .ToListAsync();
                 var selectedAttempts = attempts;
                 return View(selectedAttempts);
             }
             else
             {
                 attempts = await _context.Attempts.Include(x => x.Test).ThenInclude(t => t.Questions).Where(x => x.Test.CourseId == courseId)
-                    .Include(x => x.Test)
                     .Include(a => a.Student)
                     .ThenInclude(s => s.Account)
                     .Where(a => a.TestId == testId)

@@ -98,6 +98,8 @@ namespace IS_distance_learning.Controllers
                 test.Date = dto.Date;
                 test.ExpirationDate = dto.ExpirationDate;
                 test.CourseId = dto.CourseId;
+                _context.Tests.Update(test);
+                await _context.SaveChangesAsync();
                 return RedirectToAction("Details", "Course", new {id = course.Id});
             }
             return View(dto);
