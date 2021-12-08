@@ -290,9 +290,9 @@ namespace IS_distance_learning.Controllers
             }
             else
             {
-                var student = await _context.Accounts.FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
-                var attempts = await _context.Attempts.Include(x => x.Test).Where(x => x.StudentId == student.Student.Id && x.Test.CourseId == course.Id).ToListAsync();
-                
+                var student = await _context.Accounts.Include(a => a.Student).FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
+                var attempts = await _context.Attempts.Include(x => x.Test).ThenInclude(t => t.Questions).Where(x => x.StudentId == student.Student.Id && x.Test.CourseId == course.Id).ToListAsync();
+
                 var tests = course.Tests.Where(x => !attempts.Any() || attempts.All(y => y.TestId != x.Id)).ToList();
 
                 var details = new CourseDetailsModel { Name = course.Name, Description = course.Description, Teacher = course.Teacher, Tests = tests, Attempts = attempts};

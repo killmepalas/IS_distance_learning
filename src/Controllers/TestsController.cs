@@ -98,6 +98,8 @@ namespace IS_distance_learning.Controllers
                 test.Date = dto.Date;
                 test.ExpirationDate = dto.ExpirationDate;
                 test.CourseId = dto.CourseId;
+                _context.Tests.Update(test);
+                await _context.SaveChangesAsync();
                 return RedirectToAction("Details", "Course", new {id = course.Id});
             }
             return View(dto);
@@ -161,7 +163,7 @@ namespace IS_distance_learning.Controllers
                 var question = await _context.Questions.FindAsync(answer.QuestionId);
                 var test = await _context.Tests.FindAsync(question.TestId);
                 var student = await _context.Accounts.Include(x => x.Student).FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
-                var attempt = await _context.Attempts.FirstOrDefaultAsync(x => x.StudentId == student.Id && x.TestId == test.Id);
+                var attempt = await _context.Attempts.FirstOrDefaultAsync(x => x.StudentId == student.Student.Id && x.TestId == test.Id);
                 if (attempt == null)
                 {
                     attempt = new Attempt
