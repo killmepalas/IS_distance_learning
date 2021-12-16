@@ -19,12 +19,11 @@ namespace IS_distance_learning.Controllers
         {
             _context = context;
         }
-        //
         [HttpGet]
         [Authorize]
         public async Task<IActionResult> Details(int id)
         {
-            var test = await _context.Tests.Include(t => t.Questions).FirstOrDefaultAsync(x => x.Id == id);
+            var test = await _context.Tests.Include(t => t.Course).Include(t => t.Questions).FirstOrDefaultAsync(x => x.Id == id);
             if (test == null)
             {
                 return NotFound();
@@ -110,7 +109,7 @@ namespace IS_distance_learning.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var test = await _context.Tests.FindAsync(id);
+            var test = await _context.Tests.Include(x => x.Attempts).FirstOrDefaultAsync(x => x.Id == id);
             if (test == null)
             {
                 return NotFound();
