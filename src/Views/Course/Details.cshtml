@@ -74,7 +74,7 @@
         <td>@t.Description</td>
         <td>@t.Date</td>
         <td>@t.ExpirationDate</td>
-        @if (User.IsInRole("teacher") && (t.Date.CompareTo(DateTime.Now) > 0) || (t.ExpirationDate.CompareTo(DateTime.Now) < 0))
+        @if (User.IsInRole("teacher"))
         {
             <td>
                 <form method="get">
@@ -82,18 +82,21 @@
                     <input type="submit" asp-action="Update" asp-controller="Tests" class="btn btn-info" value="Редактировать" />
                 </form>
             </td>
-            <td>
-                <form method="get">
-                    <input name="id" class="hide disabled invisible" type="hidden" value="@t.Id" />
-                    <input type="submit" asp-action="Details" asp-controller="Tests" class="btn btn-info" value="Подробнее" />
-                </form>
-            </td>
-            <td>
-                <form method="post">
-                    <input name="id" class="hide disabled invisible" type="hidden" value="@t.Id" />
-                    <input type="submit" asp-action="Delete" asp-controller="Tests" class="btn btn-danger" value="Удалить" />
-                </form>
-            </td>
+            if (t.Date.CompareTo(DateTime.Now) > 0 || t.ExpirationDate.CompareTo(DateTime.Now) < 0)
+            {
+                <td>
+                    <form method="get">
+                        <input name="id" class="hide disabled invisible" type="hidden" value="@t.Id" />
+                        <input type="submit" asp-action="Details" asp-controller="Tests" class="btn btn-info" value="Подробнее" />
+                    </form>
+                </td>
+                <td>
+                    <form method="post">
+                        <input name="id" class="hide disabled invisible" type="hidden" value="@t.Id" />
+                        <input type="submit" asp-action="Delete" asp-controller="Tests" class="btn btn-danger" value="Удалить" />
+                    </form>
+                </td>
+            }
         }
         else if (User.IsInRole("teacher"))
         {

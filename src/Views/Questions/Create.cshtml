@@ -26,6 +26,12 @@
         </form>
     </div>
 </div>
+<div>
+    <form asp-action="Details" asp-controller="Tests" method="get">
+        <input name="id" type="hidden" value="@ViewBag.TestId" />
+        <input type="submit" value="Вернуться к тесту" class="btn-link border-0 bg-white" />
+    </form>
+</div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}

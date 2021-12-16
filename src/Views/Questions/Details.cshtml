@@ -53,3 +53,8 @@
             }
     </table>
 </div>
+
+<form asp-action="Details" asp-controller="Tests" method="get">
+    <input name="id" type="hidden" value="@Model.TestId" />
+    <input type="submit" value="Вернуться к тесту" class="btn-link border-0 bg-white" />
+</form>
