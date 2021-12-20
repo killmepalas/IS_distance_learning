@@ -42,7 +42,7 @@ namespace IS_distance_learning.Controllers
         [HttpPost]
         [Authorize(Roles = "teacher")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Name,Description,Date,ExpirationDate,CourseId")] Test test)
+        public async Task<IActionResult> Create([Bind("Name,Description,Date,ExpirationDate,AttemptCount,CourseId")] Test test)
         {
             if (ModelState.IsValid)
             {
@@ -75,7 +75,7 @@ namespace IS_distance_learning.Controllers
         [HttpPost]
         [Authorize(Roles = "teacher")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Update(int id, [Bind("Name,Description,Date,ExpirationDate,CourseId")] Test dto)
+        public async Task<IActionResult> Update(int id, [Bind("Name,Description,Date,ExpirationDate,AttemptCount,CourseId")] Test dto)
         {
             if (ModelState.IsValid)
             {
@@ -96,6 +96,7 @@ namespace IS_distance_learning.Controllers
                 test.Description = dto.Description;
                 test.Date = dto.Date;
                 test.ExpirationDate = dto.ExpirationDate;
+                test.AttemptCount = dto.AttemptCount;
                 test.CourseId = dto.CourseId;
                 _context.Tests.Update(test);
                 await _context.SaveChangesAsync();
@@ -128,15 +129,16 @@ namespace IS_distance_learning.Controllers
 
         [HttpGet]
         [Authorize(Roles = "student")]
-        public async Task<IActionResult> Pass(int testId, int questionId = 0, int attemptId = 0)
+        public async Task<IActionResult> Pass(int testId, int questionId = 0, int attemptId = 0, int newAttempt = 0)
         {
             var test = await _context.Tests.Include(x => x.Course).Include(x => x.Questions).ThenInclude(x => x.Answers)
                 .FirstOrDefaultAsync(x => x.Id == testId);
-            var account = await _context.Accounts.Include(x => x.Student).FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
+            var account = await _context.Accounts.Include(x => x.Student).ThenInclude(s => s.Attempts).FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
+            var attempt = await _context.Attempts.FirstOrDefaultAsync(a => a.Id == attemptId && a.TestId == testId && a.StudentId == account.Student.Id);
 
-            if (attemptId == 0)
+            if (attempt == null || newAttempt == 1)
             {
-                Attempt attempt = new Attempt
+                attempt = new Attempt
                 {
                     StudentId = account.Student.Id,
                     TestId = test.Id,
@@ -147,7 +149,7 @@ namespace IS_distance_learning.Controllers
                 await _context.SaveChangesAsync();
                 ViewBag.attemptId = attempt.Id;
             }
-            else 
+            ViewBag.attemptId = attempt.Id;
             if (questionId == 0)
             {
                 return View(test.Questions.First());
@@ -178,7 +180,8 @@ namespace IS_distance_learning.Controllers
                 var question = await _context.Questions.FindAsync(answer.QuestionId);
                 var test = await _context.Tests.FindAsync(question.TestId);
                 var account = await _context.Accounts.Include(a => a.Student).ThenInclude(s => s.Attempts).FirstOrDefaultAsync(a => a.Login == User.Identity.Name);
-                var attempt = await _context.Attempts.FirstOrDefaultAsync(x => x.Id == attemptId);
+                var studentAttempts = await _context.Attempts.Where(a => a.StudentId == account.Student.Id && a.TestId == test.Id).ToListAsync();
+                var attempt = await _context.Attempts.FirstOrDefaultAsync(a => a.StudentId == account.Student.Id && a.TestId == test.Id && a.Id == attemptId);
 
                 attempt.Mark += (answer.IsRight ? 1 : 0);
                 attempt.Grade = GetAttemptGrade(attempt.Mark, test.Questions.Count);
@@ -190,18 +193,25 @@ namespace IS_distance_learning.Controllers
                 if (next == null)
                 {
                     var testGrade = await _context.TestsGrades.FirstOrDefaultAsync(tg => tg.TestId == test.Id && tg.StudentId == account.Student.Id);
+
                     if (testGrade == null)
                     {
                         testGrade = new TestGrade
                         {
                             StudentId = account.Student.Id,
                             TestId = test.Id,
-                            Grade = GetTestGrade(account.Student.Attempts)
+                            Grade = GetTestGrade(studentAttempts)
                         };
+                        
                     }
+
+                    testGrade.Grade = GetTestGrade(studentAttempts);
+                    await _context.TestsGrades.AddAsync(testGrade);
+                    await _context.SaveChangesAsync();
+
                     return RedirectToAction("Details", "Course", new {id = test.CourseId});
                 }
-                return RedirectToAction("Pass", "Tests", new {testId = test.Id, questionId = next.Id});
+                return RedirectToAction("Pass", "Tests", new {testId = test.Id, questionId = next.Id, attemptId = attempt.Id});
             }
             ModelState.AddModelError("", "Ответ на вопрос не выбран!");
 
@@ -235,7 +245,26 @@ namespace IS_distance_learning.Controllers
 
         private static int GetTestGrade(List<Attempt> attempts)
         {
-            return 
+            int attemptsCount = attempts.Count;
+            int sum = 0;
+            int grade = 0;
+
+            foreach(Attempt a in attempts)
+            {
+                sum += a.Mark;
+            }
+
+            double tmp = sum / attemptsCount;
+
+            if (attemptsCount <= 2)
+            {
+                grade = (Int32)Math.Round(tmp, MidpointRounding.AwayFromZero);
+                return grade;
+            }
+            tmp = sum / attemptsCount - ((attemptsCount - 2) * 0.5);
+            grade = (Int32)Math.Round(tmp, MidpointRounding.AwayFromZero);
+
+            return grade;
         }
 
     }

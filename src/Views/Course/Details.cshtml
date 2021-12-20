@@ -113,7 +113,8 @@
         {
             <td>
                 <form method="get">
-                    <input name="testId" class="hide disabled invisible" type="hidden" value="@t.Id" />
+                    <input name="testId" type="hidden" value="@t.Id" />
+                    <input name="newAttempt" type="hidden" value="1" />
                     <input type="submit" asp-action="Pass" asp-controller="Tests" class="btn btn-success" value="Пройти тест" />
                 </form>
             </td>
@@ -123,14 +124,14 @@
     </table>
     @if (User.IsInRole("student"))
     {
-        <h3>Пройденные тесты</h3>
+        <h3>Ваши попытки</h3>
         <table border="1" bordercolor="#dee2e6" class="table">
             <tr>
                 <th>Название теста</th>
                 <th>Описание</th>
                 <th>Дата начала</th>
                 <th>Дата окончания</th>
-                <th>Кол-во правильных ответов</th>
+                <th>Оценка</th>
             </tr>
             @foreach (Attempt a in Model.Attempts)
             {
@@ -139,7 +140,7 @@
                     <td>@a.Test.Description</td>
                     <td>@a.Test.Date</td>
                     <td>@a.Test.ExpirationDate</td>
-                    <td>@a.Mark из @a.Test.Questions.Count</td>
+                    <td>@a.Grade</td>
                 </tr>
             }
         </table>
