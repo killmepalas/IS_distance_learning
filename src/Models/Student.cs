@@ -12,5 +12,7 @@ namespace IS_distance_learning.Models
         public Account Account { get; set; }
         public int? GroupId { get; set; }
         public Group Group { get; set; }
+
+        public List<Attempt> Attempts { get; set; } = new List<Attempt>();
     }
 }
