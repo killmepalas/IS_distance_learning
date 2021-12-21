@@ -110,14 +110,16 @@ namespace IS_distance_learning.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Delete(int id)
         {
-            var test = await _context.Tests.Include(x => x.Attempts).FirstOrDefaultAsync(x => x.Id == id);
+            var test = await _context.Tests
+                .Include(t => t.Attempts)
+                .Include(t => t.TestsGrades)
+                .FirstOrDefaultAsync(x => x.Id == id);
             if (test == null)
             {
                 return NotFound();
             }
             var course = await _context.Courses.FindAsync(test.CourseId);
-            var teacher = await _context.Teachers.FirstOrDefaultAsync(x =>
-                x.AccountId.ToString() == User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var teacher = await _context.Teachers.FirstOrDefaultAsync(t => t.AccountId.ToString() == User.FindFirstValue(ClaimTypes.NameIdentifier));
             if (course.TeacherId != teacher.Id)
             {
                 Forbid();
@@ -178,7 +180,7 @@ namespace IS_distance_learning.Controllers
                     return NotFound();
                 }
                 var question = await _context.Questions.FindAsync(answer.QuestionId);
-                var test = await _context.Tests.FindAsync(question.TestId);
+                var test = await _context.Tests.Include(t => t.Questions).FirstOrDefaultAsync(t => t.Id == question.TestId);
                 var account = await _context.Accounts.Include(a => a.Student).ThenInclude(s => s.Attempts).FirstOrDefaultAsync(a => a.Login == User.Identity.Name);
                 var studentAttempts = await _context.Attempts.Where(a => a.StudentId == account.Student.Id && a.TestId == test.Id).ToListAsync();
                 var attempt = await _context.Attempts.FirstOrDefaultAsync(a => a.StudentId == account.Student.Id && a.TestId == test.Id && a.Id == attemptId);
@@ -202,12 +204,35 @@ namespace IS_distance_learning.Controllers
                             TestId = test.Id,
                             Grade = GetTestGrade(studentAttempts)
                         };
-                        
+                        await _context.TestsGrades.AddAsync(testGrade);
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        testGrade.Grade = GetTestGrade(studentAttempts);
+                        _context.TestsGrades.Update(testGrade);
+                        await _context.SaveChangesAsync();
                     }
 
-                    testGrade.Grade = GetTestGrade(studentAttempts);
-                    await _context.TestsGrades.AddAsync(testGrade);
-                    await _context.SaveChangesAsync();
+                    var testsGrades = await _context.TestsGrades.Include(tg => tg.Test).Where(tg => tg.StudentId == account.Student.Id && tg.Test.CourseId == test.CourseId).ToListAsync();
+                    var courseGrade = await _context.CoursesGrades.FirstOrDefaultAsync(cg => cg.StudentId == account.Student.Id && cg.CourseId == test.CourseId);
+                    if (courseGrade == null)
+                    {
+                        courseGrade = new CourseGrade
+                        {
+                            CourseId = test.CourseId,
+                            StudentId = account.Student.Id,
+                            Grade = GetCourseGrade(testsGrades)
+                        };
+                        await _context.CoursesGrades.AddAsync(courseGrade);
+                        await _context.SaveChangesAsync();
+                    }
+                    else
+                    {
+                        courseGrade.Grade = GetCourseGrade(testsGrades);
+                        _context.CoursesGrades.Update(courseGrade);
+                        await _context.SaveChangesAsync();
+                    }
 
                     return RedirectToAction("Details", "Course", new {id = test.CourseId});
                 }
@@ -237,9 +262,13 @@ namespace IS_distance_learning.Controllers
             {
                 return 2;
             }
-            else
+            else if (percent >= 50)
             {
                 return 1;
+            }
+            else
+            {
+                return 0;
             }
         }
 
@@ -247,11 +276,11 @@ namespace IS_distance_learning.Controllers
         {
             int attemptsCount = attempts.Count;
             int sum = 0;
-            int grade = 0;
+            int grade;
 
             foreach(Attempt a in attempts)
             {
-                sum += a.Mark;
+                sum += a.Grade;
             }
 
             double tmp = sum / attemptsCount;
@@ -259,12 +288,33 @@ namespace IS_distance_learning.Controllers
             if (attemptsCount <= 2)
             {
                 grade = (Int32)Math.Round(tmp, MidpointRounding.AwayFromZero);
+                if (grade < 0)
+                {
+                    return 0;
+                }
                 return grade;
             }
             tmp = sum / attemptsCount - ((attemptsCount - 2) * 0.5);
             grade = (Int32)Math.Round(tmp, MidpointRounding.AwayFromZero);
-
+            if (grade < 0)
+            {
+                return 0;
+            }
             return grade;
+        }
+
+        private static int GetCourseGrade(List<TestGrade> testGrades)
+        {
+            int sum = 0;
+
+            foreach (TestGrade tg in testGrades)
+            {
+                sum += tg.Grade;
+            }
+
+            double tmp = sum / testGrades.Count;
+
+            return (Int32)Math.Round(tmp, MidpointRounding.AwayFromZero);
         }
 
     }

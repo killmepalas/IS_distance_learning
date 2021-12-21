@@ -14,5 +14,7 @@ namespace IS_distance_learning.Models
         public Group Group { get; set; }
 
         public List<Attempt> Attempts { get; set; } = new List<Attempt>();
+        public List<TestGrade> TestsGrades { get; set; } = new List<TestGrade>();
+        public List<CourseGrade> CourseGrades { get; set; } = new List<CourseGrade>();
     }
 }

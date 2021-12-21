@@ -30,5 +30,6 @@ namespace IS_distance_learning.Models
 
         public List<Question> Questions { get; set; } = new List<Question>();
         public List<Attempt> Attempts { get; set; } = new List<Attempt>();
+        public List<TestGrade> TestsGrades { get; set; } = new List<TestGrade>();
     }
 }
