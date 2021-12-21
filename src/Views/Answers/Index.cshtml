@@ -1,11 +1,11 @@
-﻿@model List<Attempt>
+﻿@model List<TestGrade>
 
 @{
     ViewData["Title"] = "Ответы студентов";
 }
 
 <div class="d-flex flex-column mb-2">
-    <form class="form-inline d-flex justify-content-start">
+    <form method="get" class="form-inline d-flex justify-content-start">
         <input type="hidden" name="courseId" value="@ViewBag.CourseId" />
         <div class="d-flex mr-2">
             <label class="control-label mr-1">Выберите тест: </label>
@@ -37,15 +37,33 @@
         <th>Название теста</th>
         <th>Дата окончания</th>
         <th>ФИО студента</th>
-        <th>Правильных ответов</th>
+        <th>Группа</th>
+        <th>Оценка</th>
+        <th>Попытки</th>
     </tr>
-    @foreach (Attempt a in Model)
+    @foreach (TestGrade tg in Model)
     {
         <tr>
-            <td>@a.Test.Name</td>
-            <td>@a.Test.ExpirationDate</td>
-            <td>@a.Student.Account.LastName @a.Student.Account.Name @a.Student.Account.MiddleName</td>
-            <td>@a.Mark из @a.Test.Questions.Count</td>
+            <td>@tg.Test.Name</td>
+            <td>@tg.Test.ExpirationDate</td>
+            <td>@tg.Student.Account.LastName @tg.Student.Account.Name @tg.Student.Account.MiddleName</td>
+            <td>@tg.Student.Group.Code</td>
+            <td>@tg.Grade</td>
+            <td>
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="@("#a" + tg.Id)" aria-expanded="false" aria-controls="@("a" + tg.Id)">
+                    Попытки
+                </button>
+            </td>
         </tr>
+        foreach (Attempt a in tg.Test.Attempts.Where(a => a.StudentId == tg.StudentId))
+        {
+            <tr class="collapse" id="@("a" + tg.Id)">
+                <td>@tg.Test.Name</td>
+                <td>@tg.Test.ExpirationDate</td>
+                <td>@tg.Student.Account.LastName @tg.Student.Account.Name @tg.Student.Account.MiddleName</td>
+                <td>@tg.Student.Group.Code</td>
+                <td>@a.Grade</td>
+            </tr>
+        }
     }
 </table>

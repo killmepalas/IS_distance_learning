@@ -4,46 +4,84 @@
     ViewData["Title"] = "Подробнее";
 }
 
-<div class="d-flex flex-column align-items-center">
-    <div class="d-flex justify-content-between mb-2 course">
+<div class="d-flex flex-column">
+    <div class="d-flex flex-column mb-2 align-self-center course p-3">
         <h4>@Html.DisplayFor(model => model.Name)</h4>
-        <div class="align-self-end">
+        @if (User.IsInRole("student"))
+            {
+                <div>
+                    <b class="mr-1">Оценка за курс: </b><b>@Model.CourseGrade</b>
+                </div>
+            }
+        <div >
             <span class="mr-2">Ведущий преподаватель:</span>
             <span class="mr-2">@Html.DisplayFor(model => model.Teacher.Account.LastName)</span>
             <span class="mr-2">@Html.DisplayFor(model => model.Teacher.Account.Name)</span>
             <span>@Html.DisplayFor(model => model.Teacher.Account.MiddleName)</span>
         </div>
     </div>
-    <div class="d-flex mb-3">
-        <div class="mr-5">
+    <div class="d-flex flex-column mb-3">
+        <div class="mb-3">
             <h4>Описание</h4>
             <div>@Html.DisplayFor(model => model.Description)</div>
         </div>
         @if (User.IsInRole("teacher"))
         {
-            <form class="mr-3" method="get">
-                <input name="CourseId" type="hidden" value="@Model.CourseId" />
-                <input type="submit" asp-action="Create" asp-controller="Tests" class="btn btn-primary" value="Добавить тест" />
-            </form>
-            <form method="get">
-                <input name="courseId" type="hidden" value="@Model.CourseId" />
-                <input type="submit" asp-action="Index" asp-controller="Answers" class="btn btn-primary" value="Ответы студентов" />
-            </form>
+            <div class="d-flex justify-content-around">
+                <form class="mr-3" method="get">
+                    <input name="CourseId" type="hidden" value="@Model.CourseId" />
+                    <input type="submit" asp-action="Create" asp-controller="Tests" class="btn btn-primary" value="Добавить тест" />
+                </form>
+                <form class="mr-3" method="get">
+                    <input name="courseId" type="hidden" value="@Model.CourseId" />
+                    <input type="submit" asp-action="Index" asp-controller="Answers" class="btn btn-primary" value="Ответы студентов" />
+                </form>
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#courseGrades" aria-expanded="false" aria-controls="courseGrades">
+                    Оценки студентов за курс
+                </button>
+                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#groups" aria-expanded="false" aria-controls="groups">
+                    Прикреплённые группы
+                </button>
+            </div>
         }
     </div>
     @if (User.IsInRole("teacher"))
     {
-        <table border="1" bordercolor="#dee2e6" class="table">
-            <tr>
+        <table border="1" bordercolor="#dee2e6" class="table collapse" id="groups">
             <tr>
                 <th>Название группы</th>
                 <th>Код группы</th>
             </tr>
-                @foreach (Group g in Model.Groups)
+            @foreach (Group g in Model.Groups)
+            {
+                <tr>
+                    <td>@g.Name</td>
+                    <td>@g.Code</td>
+                </tr>
+            }
+        </table>
+        <table border="1" bordercolor="#dee2e6" class="table collapse" id="courseGrades">
+            <tr>
+                <th>ФИО Студента</th>
+                <th>Группа</th>
+                <th>Оценка</th>
+                <th>Исправить оценку</th>
+            </tr>
+            @foreach (CourseGrade cg in Model.Course.CourseGrades)
                 {
                     <tr>
-                        <td>@g.Name</td>
-                        <td>@g.Code</td>
+                        <td>@cg.Student.Account.LastName @cg.Student.Account.Name @cg.Student.Account.MiddleName</td>
+                        <td>@cg.Student.Group.Code</td>
+                        <td>@cg.Grade</td>
+                        <td>
+                            <form method="post" asp-controller="CourseGrade" asp-action="Update">
+                                <input type="hidden" name="id" value="@cg.Id" />
+                                <div class="form-row">
+                                    <input class="form-control w-50 mr-3" type="number" name="grade" />
+                                    <input type="submit" class="btn btn-primary" value="Исправить" />
+                                </div>
+                            </form>
+                        </td>
                     </tr>
                 }
         </table>
@@ -66,82 +104,110 @@
                     Удалить тест
                 </th>
             }
+            @if (User.IsInRole("student"))
+            {
+                <th>
+                    Попыток осталось
+                </th>
+                <th>
+                    Пройти тест
+                </th>
+            }
         </tr>
         @foreach (Test t in Model.Tests)
         {
-    <tr>
-        <td>@t.Name</td>
-        <td>@t.Description</td>
-        <td>@t.Date</td>
-        <td>@t.ExpirationDate</td>
-        @if (User.IsInRole("teacher"))
-        {
-            <td>
-                <form method="get">
-                    <input name="id" class="hide disabled invisible" type="hidden" value="@t.Id" />
-                    <input type="submit" asp-action="Update" asp-controller="Tests" class="btn btn-info" value="Редактировать" />
-                </form>
-            </td>
-            if (t.Date.CompareTo(DateTime.Now) > 0 || t.ExpirationDate.CompareTo(DateTime.Now) < 0)
-            {
-                <td>
-                    <form method="get">
-                        <input name="id" class="hide disabled invisible" type="hidden" value="@t.Id" />
-                        <input type="submit" asp-action="Details" asp-controller="Tests" class="btn btn-info" value="Подробнее" />
-                    </form>
-                </td>
-                <td>
-                    <form method="post">
-                        <input name="id" class="hide disabled invisible" type="hidden" value="@t.Id" />
-                        <input type="submit" asp-action="Delete" asp-controller="Tests" class="btn btn-danger" value="Удалить" />
-                    </form>
-                </td>
-            }
-        }
-        else if (User.IsInRole("teacher"))
-        {
-            <td></td>
-            <td></td>
-            <td>
-                <form method="post">
-                    <input name="id" class="hide disabled invisible" type="hidden" value="@t.Id" />
-                    <input type="submit" asp-action="Delete" asp-controller="Tests" class="btn btn-danger" value="Удалить" />
-                </form>
-            </td>
-        }
-        @if (User.IsInRole("student") && (t.Date.CompareTo(DateTime.Now) < 0) && (t.ExpirationDate.CompareTo(DateTime.Now) > 0))
-        {
-            <td>
-                <form method="get">
-                    <input name="testId" type="hidden" value="@t.Id" />
-                    <input name="newAttempt" type="hidden" value="1" />
-                    <input type="submit" asp-action="Pass" asp-controller="Tests" class="btn btn-success" value="Пройти тест" />
-                </form>
-            </td>
-        }
-    </tr>
+            <tr>
+                <td>@t.Name</td>
+                <td>@t.Description</td>
+                <td>@t.Date</td>
+                <td>@t.ExpirationDate</td>
+                @if (User.IsInRole("teacher"))
+                {
+                    <td>
+                        <form method="get">
+                            <input name="id" class="hide disabled invisible" type="hidden" value="@t.Id" />
+                            <input type="submit" asp-action="Update" asp-controller="Tests" class="btn btn-info" value="Редактировать" />
+                        </form>
+                    </td>
+                    if (t.Date.CompareTo(DateTime.Now) > 0 || t.ExpirationDate.CompareTo(DateTime.Now) < 0)
+                    {
+                        <td>
+                            <form method="get">
+                                <input name="id" class="hide disabled invisible" type="hidden" value="@t.Id" />
+                                <input type="submit" asp-action="Details" asp-controller="Tests" class="btn btn-info" value="Подробнее" />
+                            </form>
+                        </td>
+                        <td>
+                            <form method="post">
+                                <input name="id" class="hide disabled invisible" type="hidden" value="@t.Id" />
+                                <input type="submit" asp-action="Delete" asp-controller="Tests" class="btn btn-danger" value="Удалить" />
+                            </form>
+                        </td>
+                    }
+                }
+                else if (User.IsInRole("teacher"))
+                {
+                    <td></td>
+                    <td></td>
+                    <td>
+                        <form method="post">
+                            <input name="id" class="hide disabled invisible" type="hidden" value="@t.Id" />
+                            <input type="submit" asp-action="Delete" asp-controller="Tests" class="btn btn-danger" value="Удалить" />
+                        </form>
+                    </td>
+                }
+                @if (User.IsInRole("student") && (t.Date.CompareTo(DateTime.Now) < 0) && (t.ExpirationDate.CompareTo(DateTime.Now) > 0))
+                {
+                    <td>
+                        @{
+                            int attemptsLeft = t.AttemptCount - Model.Attempts.Where(a => a.TestId == t.Id).ToList().Count;
+                            <span>@attemptsLeft</span>
+                         }
+                    </td>
+                    <td>
+                        <form method="get">
+                            <input name="testId" type="hidden" value="@t.Id" />
+                            <input name="newAttempt" type="hidden" value="1" />
+                            <input type="submit" asp-action="Pass" asp-controller="Tests" class="btn btn-success" value="Пройти тест" />
+                        </form>
+                    </td>
+                }
+            </tr>
         }
     </table>
     @if (User.IsInRole("student"))
     {
-        <h3>Ваши попытки</h3>
+        <h3>Пройденные тесты</h3>
         <table border="1" bordercolor="#dee2e6" class="table">
             <tr>
                 <th>Название теста</th>
-                <th>Описание</th>
                 <th>Дата начала</th>
                 <th>Дата окончания</th>
                 <th>Оценка</th>
+                <th>Попытки</th>
             </tr>
-            @foreach (Attempt a in Model.Attempts)
+            @foreach (TestGrade tg in Model.TestsGrades)
             {
                 <tr>
-                    <td>@a.Test.Name</td>
-                    <td>@a.Test.Description</td>
-                    <td>@a.Test.Date</td>
-                    <td>@a.Test.ExpirationDate</td>
-                    <td>@a.Grade</td>
+                    <td>@tg.Test.Name</td>
+                    <td>@tg.Test.Date</td>
+                    <td>@tg.Test.ExpirationDate</td>
+                    <td>@tg.Grade</td>
+                    <td>
+                        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="@("#a" + tg.Id)" aria-expanded="false" aria-controls="@("a" + tg.Id)">
+                            Попытки
+                        </button>
+                    </td>
                 </tr>
+                foreach (Attempt a in tg.Test.Attempts.Where(a => a.StudentId == tg.StudentId))
+                {
+                    <tr class="collapse" id="@("a" + tg.Id)">
+                        <td>@tg.Test.Name</td>
+                        <td>@tg.Test.Date</td>
+                        <td>@tg.Test.ExpirationDate</td>
+                        <td>@a.Grade</td>
+                    </tr>
+                }
             }
         </table>
     }
