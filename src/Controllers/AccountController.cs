@@ -292,7 +292,10 @@ namespace IS_distance_learning.Controllers
         [Authorize(Roles = "admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            Account account = await _context.Accounts.FindAsync(id);
+            Account account = await _context.Accounts
+                .Include(a => a.Student).ThenInclude(s => s.CourseGrades)
+                .Include(a => a.Student).ThenInclude(s => s.TestsGrades)
+                .FirstOrDefaultAsync(a => a.Id == id);
             _context.Accounts.Remove(account);
             await _context.SaveChangesAsync();
             return RedirectToAction("Index", "Account");

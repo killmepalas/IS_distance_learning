@@ -16,19 +16,6 @@ namespace IS_distance_learning.Controllers
         {
             _context = context;
         }
-        
-        [HttpGet]
-        [Authorize]
-        public async Task<IActionResult> Details(int questionId, int id)
-        {
-            var answer = await _context.Answers.FirstOrDefaultAsync(x => x.QuestionId == questionId && x.Id == id);
-            if (answer == null)
-            {
-                return NotFound();
-            }
-
-            return View(answer);
-        }
 
         [HttpGet]
         [Authorize(Roles = "teacher")]
@@ -113,46 +100,59 @@ namespace IS_distance_learning.Controllers
         {
             ViewBag.CourseId = courseId;
             ViewBag.Groups = await _context.Groups.ToListAsync();
-            ViewBag.Tests = await _context.Tests.Where(x => x.CourseId == courseId).ToListAsync();
-            List<Attempt> attempts = new ();
+            ViewBag.Tests = await _context.Tests.Where(t => t.CourseId == courseId).ToListAsync();
+            List<TestGrade> testsGrades = new ();
             if (testId != 0 && groupId != 0)
             {
-                attempts = await _context.Attempts.Include(x => x.Test).ThenInclude(t => t.Questions).Where(x => x.Test.CourseId == courseId)
-                    .Include(a => a.Student)
+                testsGrades = await _context.TestsGrades
+                    .Include(tg => tg.Test)
+                    .ThenInclude(t => t.Attempts)
+                    .Include(tg => tg.Student)
                     .ThenInclude(s => s.Account)
-                    .Where(a => a.Student.GroupId == groupId && a.TestId == testId)
+                    .Include(tg => tg.Student)
+                    .ThenInclude(s => s.Group)
+                    .Where(tg => tg.Student.GroupId == groupId && tg.TestId == testId && tg.Test.CourseId == courseId)
                     .ToListAsync();
-                var selectedAttempts = attempts;
-                return View(selectedAttempts);
+                return View(testsGrades);
             }
             else if (testId == 0 && groupId == 0)
             {
-                attempts = await _context.Attempts.Include(x => x.Test).ThenInclude(t => t.Questions).Where(x => x.Test.CourseId == courseId)
-                    .Include(a => a.Student)
+                testsGrades = await _context.TestsGrades
+                    .Include(tg => tg.Test)
+                    .ThenInclude(t => t.Attempts)
+                    .Where(tg => tg.Test.CourseId == courseId)
+                    .Include(tg => tg.Student)
                     .ThenInclude(s => s.Account)
+                    .Include(tg => tg.Student)
+                    .ThenInclude(s => s.Group)
                     .ToListAsync();
-                var selectedAttempts = attempts;
-                return View(selectedAttempts);
+                return View(testsGrades);
             }
             else if (testId == 0)
             {
-                attempts = await _context.Attempts.Include(x => x.Test).ThenInclude(t => t.Questions).Where(x => x.Test.CourseId == courseId)
-                    .Include(a => a.Student)
+                testsGrades = await _context.TestsGrades
+                    .Include(tg => tg.Test)
+                    .ThenInclude(t => t.Attempts)
+                    .Include(tg => tg.Student)
                     .ThenInclude(s => s.Account)
-                    .Where(a => a.Student.GroupId == groupId)
+                    .Include(tg => tg.Student)
+                    .ThenInclude(s => s.Group)
+                    .Where(tg => tg.Student.GroupId == groupId && tg.Test.CourseId == courseId)
                     .ToListAsync();
-                var selectedAttempts = attempts;
-                return View(selectedAttempts);
+                return View(testsGrades);
             }
             else
             {
-                attempts = await _context.Attempts.Include(x => x.Test).ThenInclude(t => t.Questions).Where(x => x.Test.CourseId == courseId)
-                    .Include(a => a.Student)
+                testsGrades = await _context.TestsGrades
+                    .Include(tg => tg.Test)
+                    .ThenInclude(t => t.Attempts)
+                    .Include(tg => tg.Student)
                     .ThenInclude(s => s.Account)
-                    .Where(a => a.TestId == testId)
+                    .Include(tg => tg.Student)
+                    .ThenInclude(s => s.Group)
+                    .Where(tg => tg.TestId == testId && tg.Test.CourseId == courseId)
                     .ToListAsync();
-                var selectedAttempts = attempts;
-                return View(selectedAttempts);
+                return View(testsGrades);
             }
         }
     }

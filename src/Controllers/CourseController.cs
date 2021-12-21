@@ -260,7 +260,10 @@ namespace IS_distance_learning.Controllers
         [Authorize(Roles = "teacher, admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var course = await _context.Courses.FindAsync(id);
+            var course = await _context.Courses
+                .Include(c => c.Tests).ThenInclude(t => t.TestsGrades)
+                .Include(c => c.Tests).ThenInclude(t => t.Attempts)
+                .Include(c => c.CourseGrades).FirstOrDefaultAsync(c => c.Id == id);
             if (course != null)
             {
                 _context.Courses.Remove(course);
@@ -277,7 +280,13 @@ namespace IS_distance_learning.Controllers
         [Authorize]
         public async Task<IActionResult> Details(int id)
         {
-            var course = await _context.Courses.Include(x => x.Tests).Include(c => c.Groups).Include(c => c.Teacher).ThenInclude(t => t.Account).FirstOrDefaultAsync(c => c.Id == id);
+            var course = await _context.Courses
+                .Include(x => x.Tests).ThenInclude(t => t.TestsGrades)
+                .Include(c => c.CourseGrades).ThenInclude(cg => cg.Student).ThenInclude(s => s.Group)
+                .Include(c => c.CourseGrades).ThenInclude(cg => cg.Student).ThenInclude(s => s.Account)
+                .Include(c => c.Groups)
+                .Include(c => c.Teacher).ThenInclude(t => t.Account)
+                .FirstOrDefaultAsync(c => c.Id == id);
             if (User.IsInRole("admin"))
             {
                 var details = new CourseDetailsModel { Name = course.Name, Description = course.Description, Teacher = course.Teacher, Groups = course.Groups, Tests = course.Tests };
@@ -285,17 +294,28 @@ namespace IS_distance_learning.Controllers
             }
             else if (User.IsInRole("teacher"))
             {
-                var details = new CourseDetailsModel { CourseId = course.Id, Name = course.Name, Description = course.Description, Teacher = course.Teacher, Groups = course.Groups, Tests = course.Tests };
+                var details = new CourseDetailsModel { CourseId = course.Id, Course = course, Name = course.Name, Description = course.Description, Teacher = course.Teacher, Groups = course.Groups, Tests = course.Tests };
                 return View(details);
             }
             else
             {
-                var student = await _context.Accounts.Include(a => a.Student).FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
-                var attempts = await _context.Attempts.Include(x => x.Test).ThenInclude(t => t.Questions).Where(x => x.StudentId == student.Student.Id && x.Test.CourseId == course.Id).ToListAsync();
-
-                var tests = course.Tests.Where(x => !attempts.Any() || attempts.All(y => y.TestId != x.Id)).ToList();
-
-                var details = new CourseDetailsModel { Name = course.Name, Description = course.Description, Teacher = course.Teacher, Tests = tests, Attempts = attempts};
+                var account = await _context.Accounts
+                    .Include(a => a.Student)
+                    .FirstOrDefaultAsync(x => x.Login == User.Identity.Name);
+                var attempts = await _context.Attempts
+                    .Include(x => x.Test).ThenInclude(t => t.Questions)
+                    .Where(x => x.StudentId == account.Student.Id && x.Test.CourseId == course.Id).ToListAsync();
+                var courseGrade = course.CourseGrades.FirstOrDefault(cg => cg.StudentId == account.Student.Id);
+                var grade = 0;
+                if (courseGrade != null)
+                {
+                    grade = courseGrade.Grade;
+                }
+                var tests = course.Tests.Where(t => t.AttemptCount > attempts.Where(a => a.TestId == t.Id).ToList().Count).ToList();
+                var testsGrades = await _context.TestsGrades
+                    .Include(tg => tg.Test).ThenInclude(t => t.Attempts)
+                    .Where(tg => tg.StudentId == account.Student.Id && tg.Test.CourseId == course.Id).ToListAsync();
+                var details = new CourseDetailsModel { Name = course.Name, Description = course.Description, Teacher = course.Teacher, Tests = tests, TestsGrades = testsGrades, Attempts = attempts, CourseGrade = grade };
                 return View(details);
             }
         }
