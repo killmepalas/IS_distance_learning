@@ -16,7 +16,9 @@ namespace IS_distance_learning.Models
         public DbSet<Role> Roles { get; set; }
         public DbSet<Group> Groups { get; set; }
         public DbSet<Course> Courses { get; set; }
+        public DbSet<CourseGrade> CoursesGrades { get; set; }
         public DbSet<Test> Tests { get; set; }
+        public DbSet<TestGrade> TestsGrades { get; set; }
         public DbSet<Question> Questions { get; set; }
         public DbSet<Answer> Answers { get; set; }
         public DbSet<Attempt> Attempts { get; set; }

@@ -33,7 +33,12 @@
                 <span asp-validation-for="ExpirationDate" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <input asp-for="CourseId" class="form-control" hidden value="@ViewBag.CourseId" />
+                <label asp-for="AttemptCount" class="control-label">Количество попыток</label>
+                <input asp-for="AttemptCount" class="form-control" />
+                <span asp-validation-for="AttemptCount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input asp-for="CourseId" class="form-control" type="hidden" value="@ViewBag.CourseId" />
             </div>
             <div class="form-group">
                 <input type="submit" value="Добавить" class="btn btn-primary" />
