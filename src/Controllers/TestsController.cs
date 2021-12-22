@@ -124,7 +124,7 @@ namespace IS_distance_learning.Controllers
             {
                 Forbid();
             }
-            _context.Tests.Remove(test);
+            _context.Remove(test);
             await _context.SaveChangesAsync();
             return RedirectToAction("Details", "Course", new {id = course.Id});
         }

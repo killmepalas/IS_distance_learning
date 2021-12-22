@@ -296,7 +296,7 @@ namespace IS_distance_learning.Controllers
                 .Include(a => a.Student).ThenInclude(s => s.CourseGrades)
                 .Include(a => a.Student).ThenInclude(s => s.TestsGrades)
                 .FirstOrDefaultAsync(a => a.Id == id);
-            _context.Accounts.Remove(account);
+            _context.Remove(account);
             await _context.SaveChangesAsync();
             return RedirectToAction("Index", "Account");
         }
