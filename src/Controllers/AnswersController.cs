@@ -99,7 +99,8 @@ namespace IS_distance_learning.Controllers
         public async Task<IActionResult> Index(int courseId, int testId = 0, int groupId = 0)
         {
             ViewBag.CourseId = courseId;
-            ViewBag.Groups = await _context.Groups.ToListAsync();
+            var course = await _context.Courses.FindAsync(courseId);
+            ViewBag.Groups = await _context.Groups.Where(gr => gr.Courses.Contains(course)).ToListAsync();
             ViewBag.Tests = await _context.Tests.Where(t => t.CourseId == courseId).ToListAsync();
             List<TestGrade> testsGrades = new ();
             if (testId != 0 && groupId != 0)

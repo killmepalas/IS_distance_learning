@@ -88,25 +88,10 @@ namespace IS_distance_learning.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
                     var account = await _context.Accounts.Include(a => a.Teacher).FirstOrDefaultAsync(a => a.Id == AccountId);
                     course.TeacherId = account.Teacher.Id;
                     _context.Courses.Update(course);
                     await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!await CourseExistsAsync(course.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-
                 return RedirectToAction("Index", "Course");
             }
 
@@ -153,8 +138,7 @@ namespace IS_distance_learning.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
+                
                     if (selectedGroups != null)
                     {
                         foreach (var g in _context.Groups.Where(gr => selectedGroups.Contains(gr.Id)))
@@ -162,22 +146,8 @@ namespace IS_distance_learning.Controllers
                             course.Groups.Add(g);
                         }
                     }
-
                     _context.Courses.Update(course);
                     await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!await CourseExistsAsync(course.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-
                 return RedirectToAction("Index", "Course");
             }
 
@@ -225,8 +195,6 @@ namespace IS_distance_learning.Controllers
 
             if (ModelState.IsValid)
             {
-                try
-                {
                     if (selectedGroups != null)
                     {
                         foreach (var g in _context.Groups.Where(gr => selectedGroups.Contains(gr.Id)))
@@ -237,19 +205,6 @@ namespace IS_distance_learning.Controllers
                         _context.Courses.Update(course);
                         await _context.SaveChangesAsync();
                     }
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!await CourseExistsAsync(course.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-
                 return RedirectToAction("Index", "Course");
             }
 
@@ -320,9 +275,5 @@ namespace IS_distance_learning.Controllers
             }
         }
 
-        private async Task<bool> CourseExistsAsync(int id)
-        {
-            return await _context.Courses.AnyAsync(e => e.Id == id);
-        }
     }
 }
