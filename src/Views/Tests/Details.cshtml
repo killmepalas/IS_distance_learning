@@ -6,11 +6,11 @@
 
 <div class="d-flex flex-column align-items-center">
     <div class="d-flex flex-column mb-2 course">
-        <h4>@Html.DisplayFor(model => model.Name)</h4>
-        <span class="mt-3">Описание: @Html.DisplayFor(model => model.Description)</span>
+        <h4>@Model.Name</h4>
+        <span class="mt-3">Описание: @Model.Description</span>
     </div>
     <form method="get" class="mb-3">
-        <input name="TestId" class="hide disabled invisible" type="hidden" value="@Model.Id" />
+        <input name="TestId" type="hidden" value="@Model.Id" />
         <input type="submit" asp-action="Create" asp-controller="Questions" class="btn btn-primary" value="Добавить вопрос" />
     </form>
 
