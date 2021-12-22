@@ -145,7 +145,7 @@
                         </td>
                     }
                 }
-                else if (User.IsInRole("teacher"))
+                @*else if (User.IsInRole("teacher"))
                 {
                     <td></td>
                     <td></td>
@@ -155,8 +155,8 @@
                             <input type="submit" asp-action="Delete" asp-controller="Tests" class="btn btn-danger" value="Удалить" />
                         </form>
                     </td>
-                }
-                @if (User.IsInRole("student") && (t.Date.CompareTo(DateTime.Now) < 0) && (t.ExpirationDate.CompareTo(DateTime.Now) > 0))
+                }*@
+                @if (User.IsInRole("student") && (DateTime.Now.CompareTo(t.Date) > 0) && (t.ExpirationDate.CompareTo(DateTime.Now) > 0))
                 {
                     <td>
                         @{

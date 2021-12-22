@@ -23,9 +23,6 @@
                 <textarea asp-for="Description" class="description"></textarea>
             </div>
             <div class="form-group">
-                <input name="AccountId" value="@User.Claims.ToList()[2].Value" type="hidden" class="form-control" />
-            </div>
-            <div class="form-group">
                 <input type="submit" value="Сохранить" class="btn btn-primary" />
             </div>
         </form>
@@ -35,7 +32,3 @@
 <div>
     <a asp-action="Index">Вернуться к списку курсов</a>
 </div>
-
-@section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-}
